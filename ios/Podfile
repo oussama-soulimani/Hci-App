@@ -26,6 +26,12 @@ target 'App' do
 
   pod 'RNSVG', :path => '../node_modules/react-native-svg'
 
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+
+  pod 'RNSketchCanvas', :path => '../node_modules/@terrylinla/react-native-sketch-canvas'
+
+  pod 'P41Sketch', :path => '../node_modules/react-native-sketch-draw'
+
   post_install do |installer|
     react_native_post_install(installer)
 

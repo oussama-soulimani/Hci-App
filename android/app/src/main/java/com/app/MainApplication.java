@@ -7,6 +7,10 @@ import androidx.annotation.NonNull;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.reactlibrary.RNSketchViewPackage;
+import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
+import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
+import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.horcrux.svg.SvgPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
