@@ -32,6 +32,10 @@ target 'App' do
 
   pod 'P41Sketch', :path => '../node_modules/react-native-sketch-draw'
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-async-storage/async-storage'
+
   post_install do |installer|
     react_native_post_install(installer)
 

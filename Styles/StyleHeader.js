@@ -115,7 +115,7 @@ export const styles = StyleSheet.create({
   addButton:{
     backgroundColor:'#93B3C8',
     width:'30%',
-    height:'30%',
+    height:'35%',
     justifyContent:'center',
     alignItems:'center',
     borderRadius: 4,
@@ -128,7 +128,9 @@ export const styles = StyleSheet.create({
   },
   RoomListContainer:{
     borderWidth:3,
+    borderColor:'green',
     flexDirection: 'column',
+    
   },
   roomName:{
     marginBottom: 10,

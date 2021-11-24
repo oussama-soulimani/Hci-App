@@ -1,21 +1,21 @@
 import React, { useState,useEffect, useRef } from 'react';
 import { Montserrat_300Light} from '@expo-google-fonts/montserrat'
 import { useFonts } from 'expo-font';
-import { ListView,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity} from 'react-native';
+import {Image,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity,ScrollView} from 'react-native';
 import { styles } from "../Styles/StyleHeader";
 import AppLoading from 'expo-app-loading';
 import Next from '../images/next.svg';
 import Fold from '../images/fold.svg';
 import SignatureScreen from 'react-native-signature-canvas';
 import { useContext } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ClickedContext = React.createContext();
 
 const Sign = () => {
-  const ref = useRef();
 
   const handleSignature = signature => {
-    console.debug("Confirm")
+    console.debug(signature)
   };
 
   const handleEmpty = () => {
@@ -26,17 +26,11 @@ const Sign = () => {
     console.debug('clear success!');
   }
 
-  const handleEnd = () => {
-    //ref.current.readSignature();
-    console.debug('End');
-  }
   const handleRedo = () =>{
     console.log("Redo");
   }
-
-
   return (
-    <View style={{borderWidth:3, flex:1}}>
+    <View style={{height:355,}}>
       <SignatureScreen
           onOK ={handleSignature}
           onEmpty={handleEmpty}
@@ -51,25 +45,24 @@ const Sign = () => {
     </View>
   );
 }
-class Roomline extends React.Component{
-  constructor(props){
-    super(props)
-    this.state = {}
-  }
-
-  render(){
-    return(
-      <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink',}}>
-        <Fold style={{alignSelf:'center'}} width={20} height={20}/>
-        <Text style={{
-          flex:3,
-          fontFamily: 'Montserrat_300Light', 
-          fontSize:15,
-          color:'#6D9AB0'}}
-        >{this.props.roomName}</Text>
-      </View>
-    );
-  }
+function Roomline(props){
+  const[Draw, setDraw] = useState(false);
+  return(
+    <View>
+    <TouchableOpacity onPress={()=>setDraw(!Draw)}>
+    <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink',}}>
+      <Fold style={{alignSelf:'center'}} width={20} height={20}/>
+      <Text style={{
+        flex:3,
+        fontFamily: 'Montserrat_300Light', 
+        fontSize:20,
+        color:'#6D9AB0'}}
+      >{props.roomName}</Text>
+    </View>
+    </TouchableOpacity>
+      {Draw && <Sign/>} 
+    </View>
+  );
 }
 
 
@@ -80,10 +73,6 @@ function AddRoom(){
   const modRoom = (room) =>{
     setcurrentRoom(room)
   }
-  const Add = () =>{
-    this.props.addRoom(this.state.currentRoom)
-  }
-
   const[room, addRoom] = useContext(ClickedContext);
 
   return(
@@ -91,7 +80,7 @@ function AddRoom(){
       <Fold style={{alignSelf:'center'}} width={20} height={20}/>
       <View style={styles.roomName}>
       <TextInput 
-        onSubmitEditing = {() => test()}
+        onSubmitEditing = {() => addRoom(currentRoom)}
         placeholder="New Name" 
         style={styles.roomNameText}
         onChangeText={text=>modRoom(text)}
@@ -151,14 +140,13 @@ class DrawScreen extends React.Component{
           </View>
         </View>
         <View style={styles.drawRoomContainer}>
-          <View style={styles.RoomListContainer}>
+          <ScrollView  style={styles.RoomListContainer}>
             <this.LoadRooms/>
             <ClickedContext.Provider value={[this.state.Rooms, this.addRoom]}>
               {!this.state.Applied && <AddRoom />}
             </ClickedContext.Provider>
-          </View>
-          {/*<Sign/>*/}
-          </View>
+          </ScrollView >
+        </View>
           <View style = {styles.NextButton} >
             <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
           </View>

@@ -1,4 +1,9 @@
 rootProject.name = 'App'
+include ':@react-native-async-storage_async-storage'
+project(':@react-native-async-storage_async-storage').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-async-storage/async-storage/android')
+include ':react-native-filesystem'
+project(':react-native-filesystem').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-filesystem/android')
+include ':react-native-fs'
 include ':react-native-sketch-draw'
 project(':react-native-sketch-draw').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-sketch-draw/android')
 include ':@terrylinla_react-native-sketch-canvas'

@@ -7,6 +7,13 @@ import androidx.annotation.NonNull;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
+import com.benwixen.rnfilesystem.RNFileSystemPackage;
+import com.rnfs.RNFSPackage;
+import com.rnfs.RNFSPackage;
+import com.rnfs.RNFSPackage;
+import com.rnfs.RNFSPackage;
+import com.rnfs.RNFSPackage;
 import com.reactlibrary.RNSketchViewPackage;
 import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
 import com.terrylinla.rnsketchcanvas.SketchCanvasPackage;
