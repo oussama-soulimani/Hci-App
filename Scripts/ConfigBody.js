@@ -8,71 +8,24 @@ import Next from '../images/next.svg';
 import Fold from '../images/fold.svg';
 import SignatureScreen from 'react-native-signature-canvas';
 import { useContext } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ClickedContext = React.createContext();
-const ImgAvailableContext = React.createContext();
-const PictureContext = React.createContext();
+const DrawingContext = React.createContext();
 
 function Sign(){
-  const[ImgAvailable, setImgAvailable]=useContext(ImgAvailableContext)
-  const[Picture, setPicture]=useContext(PictureContext)
+  const[RoomDrawings,addRoomDrawing]=useContext(DrawingContext)
 
-  async function read(){
-    try {
-      console.debug("reading")
-      const value = await AsyncStorage.getItem("IMG");
-      if (value !== null) {
-        // We have data!!
-        return await AsyncStorage.getItem("IMG");;
-      }else{
-        console.debug("No data")
-      }
-    } catch (error) {
-      console.debug("Error Reading Data")
-      // Error retrieving data
-    }
-  }
-
-  async function write(data){
-    try {
-      console.debug("writing")
-      await AsyncStorage.setItem(
-        "IMG", data
-        );
-    } catch (error) {
-      console.debug("Error Writing Data")
-      // Error saving data
-    }
-  };
-  
   const handleSignature = signature => {
-    write(signature).then(()=>setImgAvailable(true))
-    setPicture(signature);
-    
+    addRoomDrawing(signature)
+
   };
 
-  const handleEmpty = () => {
-    console.debug('Empty');
-  }
-
-  const handleClear = () => {
-    console.debug('clear success!');
-  }
-
-  const handleRedo = () =>{
-    console.log("Redo");
-  }
   return (
     <View style={{height:355,}}>
       <SignatureScreen
           onOK ={handleSignature}
-          onEmpty={handleEmpty}
-          onClear={handleClear}
-          onRedo={handleRedo}
           autoClear={true} 
           descriptionText={'Draw a Room'}
-          trimWhitespace={true}
           minWidth = {1.5}
           maxWidth = {1.5}
           trimWhitespace={false}
@@ -81,9 +34,6 @@ function Sign(){
   );
 }
 function Roomline(props){
-  const[Drawn, setDrawn] = useState(false);
-  const[ImgAvailable, setImgAvailable] = useState(false);
-  const[Picture, setPicture] = useState('');
   const[RoomClicked, setRoomClicked]=useState(false);
 
   function handleRoomClick(){
@@ -96,20 +46,15 @@ function Roomline(props){
       <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink',}}>
         <Fold style={{alignSelf:'center'}} width={20} height={20}/>
         <Text style={{flex:3,fontFamily: 'Montserrat_300Light',fontSize:20,color:'#6D9AB0'}}>{props.roomName}</Text>
-        <Text>{"Drawn: "+Drawn.toString()+"   "}</Text>
-        <Text>{"ImgAvailable: "+ImgAvailable.toString()+"   "}</Text>
-        <Text>{"RoomClicked: "+RoomClicked.toString()+"   "}</Text>
       </View>
     </TouchableOpacity>
-      {(RoomClicked && !ImgAvailable) ? 
-      <ImgAvailableContext.Provider value={[ImgAvailable, setImgAvailable]}>
-        <PictureContext.Provider value={[Picture, setPicture]}>
-        <Sign/>
-        </PictureContext.Provider>
-      </ImgAvailableContext.Provider>:
-      (RoomClicked && ImgAvailable) ? 
-       <Image style={{width: "80%", height:255, borderWidth:3,borderColor:'red', alignSelf:'center'}}
-      source={{uri: Picture}}></Image>:null
+      {RoomClicked ?
+        (props.Drawing==null ? 
+          <Sign/>:
+        props.Drawing!=null? 
+        <Image style={{width: "80%", height:255, borderWidth:3,borderColor:'red', alignSelf:'center'}}
+        source={{uri: props.Drawing}}></Image>:null)
+      :null
       } 
       </View>
   );
@@ -152,12 +97,13 @@ function EditRoomline(){
 function DrawScreen(){
   const [NextPressed,setNextPressed]=useState(true) // state of next screen button
   const [Rooms,setRooms]=useState([]) //all name of rooms
+  const [RoomDrawings,setRoomDrawings]=useState([]) //all name of rooms
 
 
   function LoadRooms(){
     var content = []
     for(var i=0; i<Rooms.length; i++){
-      content.push(<Roomline key = {i} roomName={Rooms[i]}/>)
+      content.push(<Roomline key = {i} roomName={Rooms[i]} Drawing = {RoomDrawings[i]}/>)
     }
     return <View>{content}</View>;
   }
@@ -168,31 +114,12 @@ function DrawScreen(){
     )
   }
 
-
-  async function read(){
-    try {
-      console.debug("reading")
-      const value = await AsyncStorage.getItem("IMG");
-      if (value !== null) {
-        // We have data!!
-        return await AsyncStorage.getItem("IMG");;
-      }else{
-        console.debug("No data")
-        return null
-      }
-    } catch (error) {
-      console.debug("Error Reading Data")
-      return null
-      // Error retrieving data
-    }
+  function addRoomDrawing(Drawing){
+    setRoomDrawings(
+      RoomDrawings=> [...RoomDrawings, Drawing]
+    )
   }
-
-  function getpic(){
-    console.debug("Fetch pic")
-    read().then(result=>{return result})
-    console.debug("End fetch")
-  }
-
+  
   return(
     <View style={{flex:1}}>
       <View style={styles.addButtonContainer}>
@@ -200,7 +127,9 @@ function DrawScreen(){
       </View>
       <View style={styles.drawRoomContainer}>
         <View  style={styles.RoomListContainer}>
+          <DrawingContext.Provider value={[RoomDrawings,addRoomDrawing]}>
           <LoadRooms/>
+          </DrawingContext.Provider>
           <ClickedContext.Provider value={[Rooms, addRoom]}>
              <EditRoomline/>
           </ClickedContext.Provider>
