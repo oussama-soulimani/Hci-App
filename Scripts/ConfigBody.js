@@ -11,11 +11,45 @@ import { useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ClickedContext = React.createContext();
+const ImgAvailableContext = React.createContext();
+const PictureContext = React.createContext();
 
-const Sign = () => {
+function Sign(){
+  const[ImgAvailable, setImgAvailable]=useContext(ImgAvailableContext)
+  const[Picture, setPicture]=useContext(PictureContext)
 
+  async function read(){
+    try {
+      console.debug("reading")
+      const value = await AsyncStorage.getItem("IMG");
+      if (value !== null) {
+        // We have data!!
+        return await AsyncStorage.getItem("IMG");;
+      }else{
+        console.debug("No data")
+      }
+    } catch (error) {
+      console.debug("Error Reading Data")
+      // Error retrieving data
+    }
+  }
+
+  async function write(data){
+    try {
+      console.debug("writing")
+      await AsyncStorage.setItem(
+        "IMG", data
+        );
+    } catch (error) {
+      console.debug("Error Writing Data")
+      // Error saving data
+    }
+  };
+  
   const handleSignature = signature => {
-    console.debug(signature)
+    write(signature).then(()=>setImgAvailable(true))
+    setPicture(signature);
+    
   };
 
   const handleEmpty = () => {
@@ -41,33 +75,48 @@ const Sign = () => {
           trimWhitespace={true}
           minWidth = {1.5}
           maxWidth = {1.5}
+          trimWhitespace={false}
       />
     </View>
   );
 }
 function Roomline(props){
-  const[Draw, setDraw] = useState(false);
+  const[Drawn, setDrawn] = useState(false);
+  const[ImgAvailable, setImgAvailable] = useState(false);
+  const[Picture, setPicture] = useState('');
+  const[RoomClicked, setRoomClicked]=useState(false);
+
+  function handleRoomClick(){
+    setRoomClicked(!RoomClicked)
+  }
+
   return(
     <View>
-    <TouchableOpacity onPress={()=>setDraw(!Draw)}>
-    <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink',}}>
-      <Fold style={{alignSelf:'center'}} width={20} height={20}/>
-      <Text style={{
-        flex:3,
-        fontFamily: 'Montserrat_300Light', 
-        fontSize:20,
-        color:'#6D9AB0'}}
-      >{props.roomName}</Text>
-    </View>
+    <TouchableOpacity onPress={()=>handleRoomClick()}>
+      <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink',}}>
+        <Fold style={{alignSelf:'center'}} width={20} height={20}/>
+        <Text style={{flex:3,fontFamily: 'Montserrat_300Light',fontSize:20,color:'#6D9AB0'}}>{props.roomName}</Text>
+        <Text>{"Drawn: "+Drawn.toString()+"   "}</Text>
+        <Text>{"ImgAvailable: "+ImgAvailable.toString()+"   "}</Text>
+        <Text>{"RoomClicked: "+RoomClicked.toString()+"   "}</Text>
+      </View>
     </TouchableOpacity>
-      {Draw && <Sign/>} 
-    </View>
+      {(RoomClicked && !ImgAvailable) ? 
+      <ImgAvailableContext.Provider value={[ImgAvailable, setImgAvailable]}>
+        <PictureContext.Provider value={[Picture, setPicture]}>
+        <Sign/>
+        </PictureContext.Provider>
+      </ImgAvailableContext.Provider>:
+      (RoomClicked && ImgAvailable) ? 
+       <Image style={{width: "80%", height:255, borderWidth:3,borderColor:'red', alignSelf:'center'}}
+      source={{uri: Picture}}></Image>:null
+      } 
+      </View>
   );
 }
 
 
-function AddRoom(){
-  
+function EditRoomline(){
   const [currentRoom, setcurrentRoom] = useState('')
 
   const modRoom = (room) =>{
@@ -80,80 +129,89 @@ function AddRoom(){
       <Fold style={{alignSelf:'center'}} width={20} height={20}/>
       <View style={styles.roomName}>
       <TextInput 
-        onSubmitEditing = {() => addRoom(currentRoom)}
+        onSubmitEditing = {() => addRoom(currentRoom)}//on enter click
         placeholder="New Name" 
         style={styles.roomNameText}
         onChangeText={text=>modRoom(text)}
       ></TextInput>
       </View>
       <View style={styles.applyButton}>
-      <TouchableOpacity onPress={()=>addRoom(currentRoom)}>
-      <Text  style={{
-        fontFamily: 'Montserrat_300Light', 
-        fontSize:20, 
-        color:'#F2F6F8'}}
-      >Apply</Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={()=>addRoom(currentRoom)}> 
+          <Text  style={{
+            fontFamily: 'Montserrat_300Light', 
+            fontSize:20, 
+            color:'#F2F6F8'}}
+          >Apply</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
 
-class DrawScreen extends React.Component{
-  constructor(props){
-    super(props)
-    this.state = {
-      Applied:false,
-      NextPressed: true,
-      Rooms:[],
-    AddPressed:false,
-    }
-  }
+function DrawScreen(){
+  const [NextPressed,setNextPressed]=useState(true) // state of next screen button
+  const [Rooms,setRooms]=useState([]) //all name of rooms
 
-  LoadRooms = ()=>{
+
+  function LoadRooms(){
     var content = []
-    for(var i=0; i<this.state.Rooms.length; i++){
-      content.push(<Roomline key = {i} roomName={this.state.Rooms[i]}/>)
+    for(var i=0; i<Rooms.length; i++){
+      content.push(<Roomline key = {i} roomName={Rooms[i]}/>)
     }
     return <View>{content}</View>;
   }
   
-  addRoom = (newRoom) =>{
-    this.setState(
-      {Rooms: [...this.state.Rooms, newRoom]}
+  function addRoom(newRoom){
+    setRooms(
+      Rooms=> [...Rooms, newRoom]
     )
-    this.setState({Applied:true})
   }
-  render(){
-    return(
-      <View style={{flex:1}}>
-        <View style={styles.addButtonContainer}>
-          <View style={styles.addButton}>
-            <TouchableOpacity onPress={()=>this.setState({Applied:false})}>
-            <Text  style={{
-              fontFamily: 'Montserrat_300Light', 
-              fontSize:20, 
-              color:'#F2F6F8'}}
-            >Add Room</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.drawRoomContainer}>
-          <ScrollView  style={styles.RoomListContainer}>
-            <this.LoadRooms/>
-            <ClickedContext.Provider value={[this.state.Rooms, this.addRoom]}>
-              {!this.state.Applied && <AddRoom />}
-            </ClickedContext.Provider>
-          </ScrollView >
-        </View>
-          <View style = {styles.NextButton} >
-            <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
-          </View>
-      </View>
 
-    );
+
+  async function read(){
+    try {
+      console.debug("reading")
+      const value = await AsyncStorage.getItem("IMG");
+      if (value !== null) {
+        // We have data!!
+        return await AsyncStorage.getItem("IMG");;
+      }else{
+        console.debug("No data")
+        return null
+      }
+    } catch (error) {
+      console.debug("Error Reading Data")
+      return null
+      // Error retrieving data
+    }
   }
+
+  function getpic(){
+    console.debug("Fetch pic")
+    read().then(result=>{return result})
+    console.debug("End fetch")
+  }
+
+  return(
+    <View style={{flex:1}}>
+      <View style={styles.addButtonContainer}>
+          <Text  style={{fontSize: 30,fontFamily: 'Montserrat_300Light',color: '#6D9AB0',alignSelf:'center',}}>Add Room</Text>
+      </View>
+      <View style={styles.drawRoomContainer}>
+        <View  style={styles.RoomListContainer}>
+          <LoadRooms/>
+          <ClickedContext.Provider value={[Rooms, addRoom]}>
+             <EditRoomline/>
+          </ClickedContext.Provider>
+        </View >
+      </View>
+        <View style = {styles.NextButton} >
+          <Next width={60} height={60} onPress={()=>setNextPressed(!NextPressed)}/>
+        </View>
+    </View>
+
+  );
 }
 
 
@@ -221,7 +279,7 @@ class RenameSensorScreen extends React.Component{
         <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
         </View>
       </View>:<PlaceSensorsScreen/>}
-      </View>    );
+      </View>);
   }
 }
 

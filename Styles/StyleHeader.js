@@ -115,7 +115,7 @@ export const styles = StyleSheet.create({
   addButton:{
     backgroundColor:'#93B3C8',
     width:'30%',
-    height:'35%',
+    height:40,
     justifyContent:'center',
     alignItems:'center',
     borderRadius: 4,
