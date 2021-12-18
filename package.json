@@ -12,6 +12,9 @@
     "@benjeau/react-native-draw": "^0.4.1",
     "@expo-google-fonts/montserrat": "^0.2.0",
     "@react-native-async-storage/async-storage": "~1.15.0",
+    "@react-native-community/checkbox": "^0.5.9",
+    "@react-native-community/datetimepicker": "^5.0.1",
+    "@react-native-picker/picker": "^2.2.1",
     "@terrylinla/react-native-sketch-canvas": "^0.8.0",
     "expo": "~43.0.0",
     "expo-app-loading": "~1.2.1",
@@ -37,7 +40,10 @@
     "react-native-vector-icons": "^9.0.0",
     "react-native-web": "0.17.1",
     "react-native-webview": "11.13.0",
-    "resize-base64": "^1.0.12"
+    "react-native-wheel-scroll-picker": "^0.2.4",
+    "react-native-wheel-scrollview-picker": "^1.2.2",
+    "resize-base64": "^1.0.12",
+    "styled-components": "^5.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

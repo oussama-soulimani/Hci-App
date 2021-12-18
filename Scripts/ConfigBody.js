@@ -1,14 +1,21 @@
-import React, { useState,useEffect, useRef } from 'react';
-import {Image,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity,ScrollView} from 'react-native';
+import React, { useState,useContext } from 'react';
+import {Image,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity,ScrollView, Pressable} from 'react-native';
 import { styles } from "../Styles/StyleHeader";
+import {Montserrat_400Regular, Montserrat_500Medium} from '@expo-google-fonts/montserrat'
+import AppLoading from 'expo-app-loading';
+import { useFonts } from 'expo-font';
 import Next from '../images/next.svg';
 import Fold from '../images/fold.svg';
+import Accept from '../images/accept.svg';
+import Reject from '../images/reject.svg';
 import SignatureScreen from 'react-native-signature-canvas';
-import { useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import {Picker} from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Clock from '../images/clock.svg'
 const ClickedContext = React.createContext();
 const DrawingContext = React.createContext();
-const ConfigurationContext = React.createContext();
 
 const animate = () => {
   const [translation, setTranslation] = useState(0);
@@ -187,9 +194,15 @@ function DrawScreen(){
   
   return(
     <View style={{flex:1}}>
-      {NextPressed ?<View style={{flex:1}}>
+      {!NextPressed ?<View style={{flex:1}}>
       <View style={styles.addButtonContainer}>
-          <Text  style={{fontSize: 30,fontFamily: 'Montserrat_300Light',color: '#6D9AB0',alignSelf:'center',}}>Add Room</Text>
+          <Text style=
+          {{
+            fontSize: 30,
+            fontFamily: 'Montserrat_300Light',
+            color: '#6D9AB0',
+            alignSelf:'center',
+          }}>Add Room</Text>
       </View>
       <View style={styles.drawRoomContainer}>
         <View  style={styles.RoomListContainer}>
@@ -206,7 +219,7 @@ function DrawScreen(){
       <View style = {styles.NextButton} >
         <Next width={60} height={60} onPress={()=>handleNextPress()}/>
       </View>
-      </View>:<View></View>}
+      </View>:<AlertQuestion/>}
     </View>
   );
 }
@@ -301,4 +314,241 @@ function EditRoomline(){
   );
 }
 
+function AlertQuestion(){
+  const [AcceptQuestion, setAccept] = useState(true);//moet later weer false
+  let [fontsloaded] = useFonts({ Montserrat_400Regular})
 
+  if(!fontsloaded){
+    return (<AppLoading/>)
+  }
+return (
+  <View style = {{flex:1}}>
+  {!AcceptQuestion ?<View style = {{flex:1}}>
+    <View style={{flex:0.2,  justifyContent:'flex-end', width: '95%' }}>
+    <Text style={{
+       fontSize: 30,
+       fontFamily: 'Montserrat_400Regular',
+       color: '#6D9AB0',
+       alignItems:'center',
+       textAlign:'center',
+    }}>Would you like to enable alerts?</Text>
+    </View>
+    <View style = {{flex:0.4,justifyContent:'center', width:'95%'}}>
+      <Text style={{
+       fontSize: 20,
+       fontFamily: 'Montserrat_400Regular',
+       color: '#3E3E3E',
+       alignItems:'center',
+       textAlign:'center',
+    }}>
+      With alerts, you can receive notifications when the door or window is open or closed.At a certain time,
+      Above or below a specific temperature,
+      or if it's raining.
+      </Text>
+    </View>
+      <View style={{flex:0.2 ,  flexDirection:'row', justifyContent: 'space-evenly'}}>
+      <Reject width={60} height={60} onPress={()=>console.log("reject")}/>
+      <Accept width={55} height={55} onPress={()=>setAccept(true)}/>
+      </View>
+  </View>: <AlertsScreen/>}        
+  </View>
+
+);
+}
+
+
+function AlertsScreen(){
+  const [weatherClicked, setWeatherClicked] = useState(true);
+  const [timeClicked, settimeClicked] = useState(true);
+
+  
+  const [FirstTempChecked, setFirstTempChecked] = useState(false);
+  const [FirstTemp,setFirstTemp ] = useState();
+  const [FirstTempValue,setFirstTempValue ] = useState();
+  const [FirstOpened,setFirstOpened ] = useState();
+  
+  const [SecondTempChecked, setSecondTempChecked] = useState(false);
+  const [SecondTemp,setSecondTemp ] = useState();
+  const [SecondTempValue,setSecondTempValue ] = useState("");
+  const [SecondOpened,setSecondOpened ] = useState();
+  
+  const [RainChecked, setRainChecked] = useState(false);
+
+  
+  const [BetweenChecked, setBetweenChecked] = useState(false);
+  const [startTime, setstartTime] = useState(false);
+  const [startTimeValue, setstartTimeValue] = useState("");
+  const [endTime, setendendTime] = useState();
+  const [endTimeValue, setendTimeValue] = useState("");
+
+
+
+  const [TempBelow, setTempBelow] = useState("");
+  let [fontsloaded] = useFonts({ Montserrat_500Medium})
+
+  if(!fontsloaded){
+    return (<AppLoading/>)
+  }
+  const handleWeather = ()=>{
+    setWeatherClicked(!weatherClicked)
+    if(timeClicked)
+      settimeClicked(!timeClicked)
+  }
+  const handleTime = ()=>{
+    console.log("Clicked")
+    settimeClicked(!timeClicked)
+    if(weatherClicked)
+      setWeatherClicked(!weatherClicked)
+  }
+  function MyCheckbox({
+    checked,
+    onChange ,
+  }) {
+    function onCheckmarkPress() {
+      onChange(!checked);
+    }
+  
+    return (
+      <Pressable
+        style={[styles.checkboxBase, checked && styles.checkboxChecked]}
+        onPress={onCheckmarkPress}>
+        {checked && <Ionicons name="checkmark" size={21} color="white" />}
+      </Pressable>
+    );
+  }
+  const handlestartTime = (value)=>{
+    setstartTime(false);
+    console.log("starttime: "+ value);
+    setstartTimeValue(value);
+  }
+  const handleEndtTime = (value)=>{
+    setendendTime(false);
+    console.log("endtime: "+ value);
+    setendTimeValue(value);
+  }
+return (
+  <View style = {styles.AlertScreenContainer}>
+    <View style={styles.Alert}>
+      <View style ={{}}>
+        <TouchableOpacity style={{flexDirection: 'row', }} onPress={()=>handleWeather()}>
+          <Fold width={30} height={30}/>
+          <Text style={{
+            fontSize: 25,
+            fontFamily: 'Montserrat_400Regular',
+            color: '#3E3E3E',
+          }}>Weather</Text>
+        </TouchableOpacity>
+        {weatherClicked ?
+        <View style={styles.weatherContainer}>
+          <View style={{flexDirection: 'row', alignItems:'center',}}>
+            <MyCheckbox checked={FirstTempChecked} onChange={setFirstTempChecked} />
+            <Text style={styles.selectionText}>Temperature</Text>
+            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+            <Picker
+              selectedValue={FirstTemp}
+              style={{width: 110, }}
+              onValueChange={(value) =>setFirstTemp(value)}>
+              <Picker.Item color = '#3E3E3E' label="Above" value="Above" />
+              <Picker.Item label="Below" value="Below" />
+            </Picker>
+          </View>
+          <View style={{backgroundColor:'white',marginTop: 5,width: 100, borderWidth:0.3, borderRadius:4, height: 40,alignItems:'center', justifyContent:'center' }}>
+            <TextInput value = {FirstTempValue} onChange = {(value)=>setFirstTempValue(value)}placeholder="Temperature" keyboardType="numeric" ></TextInput>
+          </View>
+        </View>
+        <View style={{flexDirection: 'row', alignItems:'center'}}>
+          <Text style={styles.selectionText,  {marginLeft:36}}>Notify me if
+          </Text>
+          <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+            <Picker
+              selectedValue={FirstOpened}
+              style={{width: 110, }}
+              onValueChange={(value) =>setFirstOpened(value)}>
+              <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
+              <Picker.Item label="Closed" value="Closed" />
+            </Picker>
+          </View>
+        </View>
+        <View style={{flexDirection: 'row', alignItems:'center',marginTop:15}}>
+            <MyCheckbox checked={SecondTempChecked} onChange={(value) =>setSecondTempChecked(value)} />
+            <Text style={styles.selectionText}>Temperature</Text>
+            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+            <Picker
+              selectedValue={SecondTemp}
+              style={{width: 110, }}
+              onValueChange={(value) =>setSecondTemp(value)}>
+              <Picker.Item color = '#3E3E3E' label="Above" value="Above" />
+              <Picker.Item label="Below" value="Below" />
+            </Picker>
+          </View>
+          <View style={{backgroundColor:'white',marginTop: 5,width: 100, borderWidth:0.3, borderRadius:4, height: 40,alignItems:'center', justifyContent:'center' }}>
+            <TextInput value = {SecondTempValue} onChange={(value)=>setSecondTempValue(value)}placeholder="Temperature" keyboardType="numeric" ></TextInput>
+          </View>
+        </View>
+        <View style={{flexDirection: 'row', alignItems:'center',}}>
+          <Text style={styles.selectionText, {marginLeft:36}}>Notify me if
+          </Text>
+          <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+            <Picker
+              selectedValue={SecondOpened}
+              style={{width: 110, }}
+              onValueChange={(value) =>setSecondOpened(value)}>
+              <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
+              <Picker.Item label="Closed" value="Closed" />
+            </Picker>
+          </View>
+        </View>
+        <View style={{flexDirection: 'row', alignItems:'center',marginTop:15}}>
+            <MyCheckbox checked={RainChecked} onChange={(value)=>setRainChecked(value)} />
+            <Text style={styles.selectionText}>Raining</Text>
+          </View>
+      </View>:null}
+      </View>
+      <View style ={{flex:0.4}}>
+        <TouchableOpacity style={{flexDirection: 'row',marginTop: 10,}} onPress={()=>handleTime()}>
+          <Fold width={30} height={30}/>
+          <Text style={{
+            fontSize: 25,
+            fontFamily: 'Montserrat_500Medium',
+            color: '#3E3E3E',
+          }}>Time </Text>
+        </TouchableOpacity>
+      { timeClicked ?<View>
+        <View style={styles.weatherContainer}>
+        <View style = {{flexDirection:'row', alignItems:'center', marginVertical:5}}>
+        <MyCheckbox checked={BetweenChecked} onChange={(value)=>setBetweenChecked(value)} />
+        <Text style={styles.selectionText}>Between</Text>
+          <Clock  width={30} height={30} onPress = {()=>setstartTime(!startTime)}/>
+          {startTime && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              timeZoneOffsetInMinutes={0}
+              value={new Date()}
+              mode='time'
+              is24Hour={true}
+              display="default"
+              onChange={(value)=>handlestartTime(JSON.stringify(value.nativeEvent.timestamp).match(/T[0-9]{2}[:][0-9]{2}/i)[0].replace("T", ""))}
+            />
+          )}
+          <Text style={styles.selectionText}>And </Text>
+          <Clock  width={30} height={30} onPress = {()=>setendendTime(!endTime)}/>
+          {endTime && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              timeZoneOffsetInMinutes={0}
+              value={new Date()}
+              mode='time'
+              is24Hour={true}
+              display="default"
+              onChange={(value)=>handleEndtTime(JSON.stringify(value.nativeEvent.timestamp).match(/T[0-9]{2}[:][0-9]{2}/i)[0].replace("T", ""))}
+            />
+          )}
+        </View>
+        </View>
+
+      </View>: null}
+      </View>
+    </View>
+  </View>
+);
+}

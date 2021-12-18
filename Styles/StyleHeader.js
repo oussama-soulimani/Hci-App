@@ -1,10 +1,11 @@
 import { StyleSheet, Dimensions} from 'react-native';
 var screenWidth=Dimensions.get('window').width;
+var screenHeight=Dimensions.get('window').height;
 export const styles = StyleSheet.create({
   Header: {
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent:'center',
+    justifyContent:'flex-end',
     backgroundColor: "#93B3C8",
     flex:1,
   },
@@ -157,5 +158,51 @@ export const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     borderRadius: 4,
+  },
+  AlertScreenContainer:{
+    flex:1,
+    borderWidth:5, 
+    borderColor: 'yellow',
+    justifyContent: 'center'
+  },
+
+  Alert:{ 
+    flex: 0.8, 
+    flexDirection: 'column',
+    borderWidth:3, 
+    borderColor: 'red', 
+    width: screenWidth,
+    alignItems: 'flex-start'
+  },
+  checkboxBase: {
+    marginTop: 5,
+    marginLeft: 5,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#93B3C8',
+    backgroundColor: 'transparent',
+  },
+  checkboxChecked: {
+    backgroundColor: '#007D08',
+  },
+  weatherContainer:{
+    marginTop:5,
+    marginLeft: 13,
+    backgroundColor:'#E6EEF3',
+    width: screenWidth*0.92,
+    borderRadius: 6,
+    paddingBottom: 5,
+  },
+  selectionText:{
+    fontSize: 15,
+    fontFamily: 'Montserrat_500Medium',
+    color: '#3E3E3E',
+    marginLeft:5,
+    marginTop:5,
+    marginRight:6,
   }
 });
