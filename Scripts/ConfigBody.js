@@ -1,5 +1,5 @@
 import React, { useState,useContext } from 'react';
-import {Image,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity,ScrollView, Pressable} from 'react-native';
+import {Modal, Image,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity,ScrollView, Pressable} from 'react-native';
 import { styles } from "../Styles/StyleHeader";
 import {Montserrat_400Regular, Montserrat_500Medium} from '@expo-google-fonts/montserrat'
 import AppLoading from 'expo-app-loading';
@@ -14,6 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import {Picker} from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Clock from '../images/clock.svg'
+import { headerTextContext } from './App';
+import { RoomsScreen } from './UseBody';
+
 const ClickedContext = React.createContext();
 const DrawingContext = React.createContext();
 
@@ -53,7 +56,7 @@ export class ListDetectedSensors extends React.Component{
       <View>
       {this.state.NextPressed ? <View style = {styles.DetectBox}>
         <View style={styles.SensorListHeader}>
-          <Text style={styles.SensorListHeaderText}>3 Sensors Detected</Text>
+          <Text style={styles.Bigtext}>3 Sensors Detected</Text>
         </View>
         <View style={styles.sensorListContainer}>
           <View style={styles.SensorList}>
@@ -89,7 +92,7 @@ class RenameSensorScreen extends React.Component{
       <View style={{flex:1}}>
       {this.state.NextPressed ?<View style = {styles.DetectBox}>
         <View style={styles.SensorListHeader}>
-          <Text style={styles.SensorListHeaderText}>3 Sensors Detected</Text>
+          <Text style={styles.Bigtext}>3 Sensors Detected</Text>
         </View>
         <View style={styles.sensorListContainer}>
           <View style={styles.SensorList}>
@@ -149,29 +152,28 @@ class PlaceSensorsScreen extends React.Component{
 
 
 function DrawScreen(){
-  const [NextPressed,setNextPressed]=useState(true) // state of next screen button
+  const [NextPressed,setNextPressed]=useState(true) // moet later op false
   const [Rooms,setRooms]=useState([]) //all name of rooms
-  const [RoomDrawings,setRoomDrawings]=useState([]) //all name of rooms
-  const [Drawing, setDrawing] = useState("");
+  const [RoomDrawings,setRoomDrawings]=useState([]) //allke drawing of rooms
+  const [Drawing, setDrawing] = useState();
 
-  getData = async ()=>{
+
+  
+  async function storeRoomName(Roomname, RoomDrawing){
     try{
-      var value = await AsyncStorage.getItem('Drawing');
-      if(value!=null){
-        setDrawing(value);
-        console.log("Data fetched")
-        console.log(value);
-      }else{
-        console.log("No data to fetch");
-      }
+      await AsyncStorage.setItem(Roomname, RoomDrawing)
     }catch(e){
-      console.log("Error fetching: "+e);
+      console.log("Error storing: "+e);
     }
   }
+
   function handleNextPress(){
-    getData();
+    for(var i=0; i<Rooms.length; i++){
+      storeRoomName(Rooms[i], RoomDrawings[i]);
+    }
     setNextPressed(!NextPressed)
   }
+
   function LoadRooms(){
     var content = []
     for(var i=0; i<Rooms.length; i++){
@@ -181,6 +183,7 @@ function DrawScreen(){
   }
   
   function addRoom(newRoom){
+
     setRooms(
       Rooms=> [...Rooms, newRoom]
     )
@@ -189,7 +192,7 @@ function DrawScreen(){
   function addRoomDrawing(Drawing){
     setRoomDrawings(
       RoomDrawings=> [...RoomDrawings, Drawing]
-    )
+      )
   }
   
   return(
@@ -213,8 +216,6 @@ function DrawScreen(){
              <EditRoomline/>
           </ClickedContext.Provider>
         </View >
-        {Drawing!="" ? <Image style={{width: "80%", height:255, borderWidth:3,borderColor:'red', alignSelf:'center'}}
-        source={{uri: Drawing}}></Image>:<Text>No Drawing</Text>}
       </View>
       <View style = {styles.NextButton} >
         <Next width={60} height={60} onPress={()=>handleNextPress()}/>
@@ -224,25 +225,16 @@ function DrawScreen(){
   );
 }
 
-function Sign(){
+function Sign(props){
   const[RoomDrawings,addRoomDrawing]=useContext(DrawingContext)
 
   const handleSignature = async signature => {
-    const storeData = async () =>{
-      console.log("Storing Data");
-      try{
-        console.log(signature[0])
-        await AsyncStorage.setItem('Drawing', signature)
-      }catch(e){
-        console.log("Error storing: "+e);
-      }
-    }
-    storeData();
+    props.handlepopup(false);
     addRoomDrawing(signature)
   };
 
   return (
-    <View style={{height:355,}}>
+    <View style={styles.drawroompopup}>
       <SignatureScreen
           onOK ={handleSignature}
           autoClear={true} 
@@ -257,24 +249,36 @@ function Sign(){
 
 function Roomline(props){
   const[RoomClicked, setRoomClicked]=useState(false);
+  const [showPopup, setshowPopup] = useState(false);
 
+  function handlePopup(value){
+    setshowPopup(value);
+  }
   function handleRoomClick(){
+    if(props.Drawing==null){
+      setshowPopup(true);
+    }
     setRoomClicked(!RoomClicked)
   }
 
   return(
     <View>
     <TouchableOpacity onPress={()=>handleRoomClick()}>
-      <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink',}}>
+      <View style={{flexDirection:'row', marginBottom:7, marginLeft:5,}}>
         <Fold style={{alignSelf:'center'}} width={20} height={20}/>
         <Text style={{flex:3,fontFamily: 'Montserrat_300Light',fontSize:20,color:'#6D9AB0'}}>{props.roomName}</Text>
       </View>
     </TouchableOpacity>
       {RoomClicked ?
         (props.Drawing==null ? 
-          <Sign/>:
+          <View style={{flex:1, justifyContent:'center', alignItems:'center', marginTop:30}}>
+          <Modal animationType='fade' transparent={true} visible={showPopup}>
+            <Sign handlepopup={handlePopup}/>
+          </Modal>
+          </View>
+          :
         props.Drawing!=null? 
-        <Image style={{width: "80%", height:255, borderWidth:3,borderColor:'red', alignSelf:'center'}}
+        <Image style={{width: "80%", height:255, alignSelf:'center'}}
         source={{uri: props.Drawing}}></Image>:null)
       :null
       } 
@@ -282,7 +286,7 @@ function Roomline(props){
   );
 }
 
-function EditRoomline(){
+export function EditRoomline(){
   const [currentRoom, setcurrentRoom] = useState('')
 
   const modRoom = (room) =>{
@@ -291,11 +295,11 @@ function EditRoomline(){
   const[room, addRoom] = useContext(ClickedContext);
 
   return(
-    <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, borderWidth:3, borderColor:'pink', }}>
+    <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, }}>
       <Fold style={{alignSelf:'center'}} width={20} height={20}/>
       <View style={styles.roomName}>
       <TextInput 
-        onSubmitEditing = {() => addRoom(currentRoom)}//on enter click
+        onSubmitEditing = {() =>addRoom(currentRoom) }//on enter click
         placeholder="New Name" 
         style={styles.roomNameText}
         onChangeText={text=>modRoom(text)}
@@ -316,14 +320,24 @@ function EditRoomline(){
 
 function AlertQuestion(){
   const [AcceptQuestion, setAccept] = useState(true);//moet later weer false
+  const [RejectQuestion, setRejectQuestion] = useState(false);//moet later weer false  
+  const [headerText, setText] = useContext(headerTextContext);
+
   let [fontsloaded] = useFonts({ Montserrat_400Regular})
+  
+  function handleRejectPress(){
+    setText("Usage")
+    setRejectQuestion(true)
+
+  }
+    
 
   if(!fontsloaded){
     return (<AppLoading/>)
   }
 return (
   <View style = {{flex:1}}>
-  {!AcceptQuestion ?<View style = {{flex:1}}>
+  {!AcceptQuestion&&!RejectQuestion ?<View style = {{flex:1}}>
     <View style={{flex:0.2,  justifyContent:'flex-end', width: '95%' }}>
     <Text style={{
        fontSize: 30,
@@ -347,19 +361,20 @@ return (
       </Text>
     </View>
       <View style={{flex:0.2 ,  flexDirection:'row', justifyContent: 'space-evenly'}}>
-      <Reject width={60} height={60} onPress={()=>console.log("reject")}/>
+      <Reject width={60} height={60} onPress={()=>handleRejectPress()}/>
       <Accept width={55} height={55} onPress={()=>setAccept(true)}/>
       </View>
-  </View>: <AlertsScreen/>}        
+  </View>: !RejectQuestion?<AlertsScreen/>:<RoomsScreen/>}        
   </View>
 
 );
 }
 
 
-function AlertsScreen(){
+export function AlertsScreen(){
   const [weatherClicked, setWeatherClicked] = useState(true);
   const [timeClicked, settimeClicked] = useState(true);
+  const [NextPressed,setNextPressed]=useState(true) // Moet later weer op false
 
   
   const [FirstTempChecked, setFirstTempChecked] = useState(false);
@@ -381,7 +396,7 @@ function AlertsScreen(){
   const [endTime, setendendTime] = useState();
   const [endTimeValue, setendTimeValue] = useState("");
 
-
+  const [headerText, setText] = useContext(headerTextContext);
 
   const [TempBelow, setTempBelow] = useState("");
   let [fontsloaded] = useFonts({ Montserrat_500Medium})
@@ -389,17 +404,25 @@ function AlertsScreen(){
   if(!fontsloaded){
     return (<AppLoading/>)
   }
+
+  function handleNextPress(){
+    setText("Usage")
+    setNextPressed(!NextPressed)
+  }
+
   const handleWeather = ()=>{
     setWeatherClicked(!weatherClicked)
     if(timeClicked)
       settimeClicked(!timeClicked)
   }
+
   const handleTime = ()=>{
     console.log("Clicked")
     settimeClicked(!timeClicked)
     if(weatherClicked)
       setWeatherClicked(!weatherClicked)
   }
+
   function MyCheckbox({
     checked,
     onChange ,
@@ -426,8 +449,12 @@ function AlertsScreen(){
     console.log("endtime: "+ value);
     setendTimeValue(value);
   }
+
+
 return (
-  <View style = {styles.AlertScreenContainer}>
+  <View style = {{flex:1,}}>
+  {!NextPressed ? <View style = {{flex:1,}}>
+    <View style={{flex:0.1}}></View>
     <View style={styles.Alert}>
       <View style ={{}}>
         <TouchableOpacity style={{flexDirection: 'row', }} onPress={()=>handleWeather()}>
@@ -545,10 +572,12 @@ return (
           )}
         </View>
         </View>
-
       </View>: null}
       </View>
     </View>
-  </View>
+    <View style = {{marginRight:3,marginBottom:3, flex:0.1, borderWidth:3, flexDirection:'row', justifyContent:'flex-end', alignItems:'flex-end'}} >
+        <Next width={60} height={60} onPress={()=>handleNextPress()}/>
+    </View>
+  </View>:<RoomsScreen/>}</View>
 );
 }

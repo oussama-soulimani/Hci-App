@@ -1,15 +1,23 @@
 import { StyleSheet, Dimensions} from 'react-native';
+import { ScreenWidth } from 'react-native-elements/dist/helpers';
 var screenWidth=Dimensions.get('window').width;
 var screenHeight=Dimensions.get('window').height;
+
 export const styles = StyleSheet.create({
+  
   Header: {
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent:'flex-end',
     backgroundColor: "#93B3C8",
-    flex:1,
+    flex:1.2,
   },
-
+  HeaderText: {
+    fontFamily:'Montserrat_300Light',
+    fontSize:33,  
+    marginBottom: 2,
+    color: "#F2F6F8" 
+  },
   Body: {
     backgroundColor: "#F2F6F8",
     flex:10,
@@ -51,7 +59,7 @@ export const styles = StyleSheet.create({
     justifyContent:'flex-end',
     alignItems:'center',
   },
-  SensorListHeaderText:{
+  Bigtext:{
     fontSize: 30, 
     fontFamily: 'Montserrat_300Light',
     color: '#6D9AB0',
@@ -101,14 +109,12 @@ export const styles = StyleSheet.create({
   },
   NextButton:{
     width:screenWidth,
-    borderWidth: 3,
     alignItems:'flex-end', 
     justifyContent:'flex-end',
     paddingRight: 10,
   },
   addButtonContainer:{
     flex:.2,
-    borderWidth:3,
     justifyContent:'center',
     alignItems:'center',
 
@@ -121,15 +127,23 @@ export const styles = StyleSheet.create({
     alignItems:'center',
     borderRadius: 4,
   },
+   /**
+   * 2x+355 = height
+   * x = height-355/2
+   */
+  drawroompopup:{
+    paddingTop:(screenHeight-355)/2,
+    height:355+(screenHeight-355)/2,
+    justifyContent:'center', 
+    alignItems:'center', 
+  },
+
+ 
   drawRoomContainer:{
     flex:.8,
-    borderWidth:3,
-    borderColor:'#FF0000',
     width: screenWidth,
   },
   RoomListContainer:{
-    borderWidth:3,
-    borderColor:'green',
     flexDirection: 'column',
     
   },
@@ -161,9 +175,6 @@ export const styles = StyleSheet.create({
   },
   AlertScreenContainer:{
     flex:1,
-    borderWidth:5, 
-    borderColor: 'yellow',
-    justifyContent: 'center'
   },
 
   Alert:{ 
@@ -204,5 +215,117 @@ export const styles = StyleSheet.create({
     marginLeft:5,
     marginTop:5,
     marginRight:6,
-  }
+  },
+  roomImage:{
+    width: screenWidth*0.40, 
+    height:screenWidth*0.35, 
+  },
+  roomImageContainer:{
+    width: screenWidth*0.40,
+    borderWidth:3,
+    borderRadius:6,
+    borderColor:'#E5EDF0', 
+    backgroundColor:"#E5EDF0",
+    alignItems:'center',
+    marginVertical:10,
+  },
+  roomsContainer:{
+   
+    flexDirection:'row',
+    width:screenWidth,
+    justifyContent:'space-evenly',
+    flexWrap:'wrap',
+    
+
+  },
+  roomdrawingName:{
+    fontFamily:'Montserrat_300Light',
+    color:'#6D9AB0',
+    fontSize:20,
+    marginRight:5
+  },
+  LastElement:{
+    width:'100%',
+    flexDirection:'row',
+    justifyContent:'center',
+    marginTop:0,
+
+  },
+  RoomScreenRoom:{
+    width: screenWidth-10, 
+    flex:1
+
+  },
+  RoomScreenContainer:{
+    flex:0.5,
+  },
+  RoomScreenText:{
+    backgroundColor:"#E5EDF0", 
+    width: screenWidth,
+    alignItems:'center',
+    justifyContent:'center',
+    flex:0.3,
+  },
+  SettingBox:{
+    flexDirection:'row',
+    alignItems:'center',
+    backgroundColor:'#E5EDF0',
+    borderWidth:1,
+    borderColor:'#93B3C8',
+    borderRadius:8,
+    width:screenWidth*0.6,
+    height:60,
+    margin:6,
+  },
+  SettingsText:{
+    fontFamily:'Montserrat_300Light',
+    color:'#6D9AB0',
+  },
+  BackButtonContainer:{
+    marginRight:5,
+    marginBottom:3, 
+    flex:0.5, 
+    flexDirection:'row', 
+    paddingLeft:10,
+    alignItems:'flex-end',
+    width:screenWidth,
+  },
+  DeleteScreenBack:{
+    marginRight:5,
+    marginBottom:3, 
+    flex:0.15, 
+    flexDirection:'row', 
+    paddingLeft:10,
+    alignItems:'flex-end',
+    width:screenWidth,
+  },
+  DeleteButton:{
+    borderWidth:1,
+    width:ScreenWidth*0.4,
+    margin:3,
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    height:55,
+    borderColor:'#93B3C8',
+    backgroundColor:'#E5EDF0',
+    borderRadius:4,
+  },
+  SettingsTextPressed:{
+    fontFamily:'Montserrat_300Light',
+    color:'#C20000',
+  },
+  DeleteButtonPressed:{
+    borderWidth:1,
+    width:ScreenWidth*0.4,
+    margin:3,
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    height:55,
+    borderColor:'#93B3C8',
+    backgroundColor:'#FCEEEE',
+    borderRadius:4,
+  },
+
 });
