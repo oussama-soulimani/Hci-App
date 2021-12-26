@@ -7,8 +7,8 @@ export const headerTextContext = React.createContext();
 export const settingsButtonContext = React.createContext();
 
 export default function App() {
-  const [headerText, setheaderText] = useState("Usage")
-  const [SettingsPressed, setSettingsPressed] = useState([true,""]);//true moet later false
+  const [headerText, setheaderText] = useState("Config")
+  const [SettingsPressed, setSettingsPressed] = useState([false,""]);//true moet later false
   const setText = (value)=>{
     setheaderText(value);
   }

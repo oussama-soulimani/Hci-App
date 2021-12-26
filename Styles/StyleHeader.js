@@ -1,7 +1,7 @@
 import { StyleSheet, Dimensions} from 'react-native';
 import { ScreenWidth } from 'react-native-elements/dist/helpers';
-var screenWidth=Dimensions.get('window').width;
-var screenHeight=Dimensions.get('window').height;
+export const screenWidth=Dimensions.get('window').width;
+export const screenHeight=Dimensions.get('window').height;
 
 export const styles = StyleSheet.create({
   
@@ -43,18 +43,15 @@ export const styles = StyleSheet.create({
   DetectBox:{
     alignItems: 'center',
     width:300,
-    borderWidth:3,
     flex:1,
     width: screenWidth
   },
   bodyContent: {
-    borderWidth:3,
-    borderColor: '#FF0000', 
+ 
   },
   SensorListHeader:{
     top:0,
     flex:.2,
-    borderWidth:1,
     width:'100%',
     justifyContent:'flex-end',
     alignItems:'center',
@@ -68,7 +65,6 @@ export const styles = StyleSheet.create({
     width:'100%',
     justifyContent:'center',
     alignItems:'center',
-    borderWidth: 1,
     borderColor: '#93B3C8',
   },
   sensor:{
@@ -82,7 +78,8 @@ export const styles = StyleSheet.create({
   },
   sensorText:{
     fontFamily: 'Montserrat_300Light', 
-    fontSize:20,
+    fontSize:25,
+    color:"#F2F6F8"
   },
   sensorRename:{
     marginBottom: 10,
@@ -253,8 +250,8 @@ export const styles = StyleSheet.create({
   },
   RoomScreenRoom:{
     width: screenWidth-10, 
-    flex:1
-
+    flex:1,
+    borderWidth:0.1
   },
   RoomScreenContainer:{
     flex:0.5,

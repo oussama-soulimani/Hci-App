@@ -1,16 +1,15 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useEffect, useState, useContext, useRef} from 'react';
 import { useAppState } from '@react-native-community/hooks'
 import { View,TextInput,Modal, Pressable } from 'react-native';
 import {AutoSizeText, ResizeTextMode} from 'react-native-auto-size-text';
-import { styles } from '../Styles/StyleHeader';
-import {Text, TouchableOpacity, Image, ScrollView} from 'react-native';
-import {Header} from './Header'
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import SignatureScreen from 'react-native-signature-canvas';
-
+import { styles,screenWidth, screenHeight } from '../Styles/StyleHeader';
 import { useFonts } from 'expo-font';
 import AppLoading from 'expo-app-loading';
 import {Montserrat_300Light,Montserrat_400Regular, Montserrat_500Medium } from '@expo-google-fonts/montserrat'
+
+import {Text, TouchableOpacity, Image, ScrollView} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SignatureScreen from 'react-native-signature-canvas';
 import { headerTextContext, settingsButtonContext } from './App';
 import { AlertsScreen } from './ConfigBody';
 import Back from'../images/back.svg'
@@ -45,12 +44,15 @@ import RedLivingRoom from '../images/Red/livingroom.svg';
 import RedDiningRoom from '../images/Red/diningRoom.svg';
 import RedBedRoom from '../images/Red/bedroom.svg';
 
+import Draggable from 'react-native-draggable';
+
 const DrawingContext = React.createContext();
 
 const RoomNameContext = React.createContext();
 const RoomDrawingContext = React.createContext();
-
+const RoomSensorsContext = React.createContext();
 const ClickedContext = React.createContext();
+const SensorsContext = React.createContext();
 
 export function GetIcon(props){
   var name = props.name
@@ -117,9 +119,9 @@ export function GetIcon(props){
   }
 }
 function RoomBox(props){
-  
+
   return(
-  <TouchableOpacity key={props.num} style={props.Drawings.length%2!=0 && props.num==props.Drawings.length-1?styles.LastElement: styles.roomImageContainer} onPress={()=>props.HandleRoomPress(props.Keys[props.num], props.Drawings[props.num])}>
+  <TouchableOpacity key={props.num} style={props.Drawings.length%2!=0 && props.num==props.Drawings.length-1?styles.LastElement: styles.roomImageContainer} onPress={()=>props.HandleRoomPress(props.Keys[props.num], props.Drawings[props.num], props.num)}>
     <View style={props.Drawings.length%2!=0 && props.num==props.Drawings.length-1?styles.roomImageContainer: {flexDirection:'column'}}>
     <View style={{flexDirection:'row', alignItems:'center',justifyContent:'center', flexWrap: 'wrap'}}>
       <Text style={styles.roomdrawingName}>{props.Keys[props.num]}</Text>
@@ -134,29 +136,38 @@ export function RoomsScreen(){
   const [Keys, setKeys] = useState([]);
   const [Drawings, setDrawings] = useState([]);
   const [RoomPressed, setRoomPressed] = useState(false);
+  const [PressedRoom, setPressedRoom] = useState();
   const [PressedRoomDrawing,setPressedRoomDrawing ] = useState("");
   const [PressedRoomName, setPressedRoomName]=useState("");
   const [settingsPressed, setsettingsPressed]=useContext(settingsButtonContext);
-  
-  const [RN, setRN] = useState([]);
-  const [RD, setRD] = useState([]);
+  const [headerText, setText] = useContext(headerTextContext);
 
+  const [RN, setRN] = useState([]); //RoomName
+  const [RD, setRD] = useState([]); //RoomDrawing
+  const [RS, setRS] = useState([]); //RoomSensors
+  
+
+  useEffect(()=>{
+    setText("Usage");
+  })
   async function getDrawings(){
     let drawing;
     let keys;
     try {
-      keys = await AsyncStorage.getAllKeys()
+      var filterNames = await AsyncStorage.getAllKeys()
+      keys = filterNames.filter(element=>element!="Mode");
       setRN(keys)
       if(keys!=null){
         setKeys(keys)
         for(var i=0; i<keys.length; i++){
           drawing = await AsyncStorage.getItem(keys[i])
           if(drawing!=null && Drawings.length==0){
-            setDrawings(Drawings =>[...Drawings, drawing]); 
-            setRD(RD =>[...RD, drawing])
+            var drawingArray = JSON.parse(drawing)
+            setDrawings(Drawings =>[...Drawings, drawingArray[0]]); 
+            setRD(RD =>[...RD, drawingArray[0]])
+            setRS(RS =>[...RS, drawingArray[1]])
           }
         }
-        console.log("Done")
       }
     }catch(e) {
       console.log("Error: "+e);
@@ -168,19 +179,19 @@ export function RoomsScreen(){
   const handleRD = (value)=>{
     setRD(value);
   }
+  const handleRS = (value)=>{
+    setRS(value);
+  }
 
-  function HandleRoomPress(Roomname, Drawing){
+  function HandleRoomPress(Roomname, Drawing, Num){
     setPressedRoomDrawing(Drawing)
     setPressedRoomName(Roomname)
+    setPressedRoom(Num);
     setRoomPressed(!RoomPressed)
   }
 
   function GetRoomDrawings(){
     var drawings = [];
-    console.log("*****")
-    console.log(RD.length);
-    console.log(RN.length);
-    console.log("*****")
     for(var i=0; i<RD.length; i++){
       drawings.push( <RoomBox key = {i} Keys = {RN} Drawings = {RD} num={i} HandleRoomPress={HandleRoomPress}/>)
     }
@@ -197,29 +208,50 @@ export function RoomsScreen(){
   }, [AppState])
 
   return (
-    <RoomDrawingContext.Provider value={[RD, handleRD]}>
-    <RoomNameContext.Provider value={[RN, handleRN]}>
+    
+  <RoomSensorsContext.Provider value={[RS, handleRS]}>
+  <RoomDrawingContext.Provider value={[RD, handleRD]}>
+  <RoomNameContext.Provider value={[RN, handleRN]}>
+    <View style={{flex:1}}>
+      {!RoomPressed && !settingsPressed[0]?
       <View style={{flex:1}}>
-        {!RoomPressed && !settingsPressed[0]?
-        <View style={{flex:1}}>
-        <View style={{flex:0.10,alignItems:'center',  justifyContent:'center'}}>
-          <Text style={styles.Bigtext}>Rooms</Text>
-        </View>
-        <GetRoomDrawings/>
-        </View>:
-        RoomPressed ? 
-        <RoomScreen RoomName = {PressedRoomName} Drawing ={PressedRoomDrawing}/>:
-        settingsPressed[0]&& 
-        <SettingsScreen/>}
+      <View style={{flex:0.10,alignItems:'center',  justifyContent:'center'}}>
+        <Text style={styles.Bigtext}>Rooms</Text>
       </View>
-      </RoomNameContext.Provider>
-      </RoomDrawingContext.Provider> 
+      <GetRoomDrawings/>
+      </View>:
+      RoomPressed ? 
+      <RoomScreen RoomName = {PressedRoomName} Drawing ={PressedRoomDrawing} num={PressedRoom} />:
+      settingsPressed[0]&& 
+      <SettingsScreen/>}
+    </View>
+    </RoomNameContext.Provider>
+    </RoomDrawingContext.Provider> 
+    </RoomSensorsContext.Provider> 
   )
 }
 function RoomScreen(props){
   const [headerText, setText] = useContext(headerTextContext);
   const [BackPressed, setBackPressed]=useState(false);
   const [settingsPressed, setsettingsPressed]=useContext(settingsButtonContext);
+  const [Dimensions, setDimensions]= useState([0,0])//width, height
+  const textRef = useRef(null);
+  const [RS, handleRS] = useContext(RoomSensorsContext)
+
+  /**
+   * RS[1][2][3]
+   * 1: index of room
+   * 2: index of sensor
+   * 3: index of x or y
+   */
+  useEffect(() => {
+    textRef.current.measure((x,y,w,h, px, py)=>{
+      var dims = []
+      dims[0] = w
+      dims[1] = h
+      setDimensions(dims)
+     })
+  },[]);
 
   const handleBack = ()=>{
     setBackPressed(true);
@@ -231,11 +263,26 @@ function RoomScreen(props){
     setsettingsPressed([settingsPressed[0],"RoomScreen"])
     setText(props.RoomName);
   }, [])
+  function List(){
+    var content = []
+    for(var i=0; i<RS[props.num].length; i++){
+      content.push(<Draggable key={i}
+        x={RS[props.num][i][0]*Dimensions[0]} 
+        y={RS[props.num][i][1]*Dimensions[1]} 
+        renderText='' 
+        isCircle renderSize={30} 
+        renderColor='#93B3C8'
+        disabled
+      />)
+    }
+    return content;
+  }
   return (
     <View style={{flex:1}} >
+    {!BackPressed && !settingsPressed[0] && <List/>}
     {!BackPressed && !settingsPressed[0] ?<View style={{flex:1}}>
     <View style={styles.RoomScreenContainer}>
-    <Image resizeMode='contain' style={styles.RoomScreenRoom} source={{uri: props.Drawing}}></Image>
+    <Image ref={textRef}  resizeMode='contain' style={styles.RoomScreenRoom} source={{uri: props.Drawing}}></Image>
     </View>
     <View style={styles.RoomScreenText}>
       <Text style={{fontSize: 35, fontFamily: 'Montserrat_500Medium', color: '#6D9AB0',}}>Window Open</Text>
@@ -253,14 +300,69 @@ function RoomScreen(props){
 
 function Sign(props){
   const[RoomDrawings,addRoomDrawing]=useContext(DrawingContext)
+  const [RoomSensors,handleSensors] = useContext(SensorsContext)
+
+  var InitialSensorsPosition = [(screenWidth/2)-30,(screenHeight-355)/2]
+  var SensorsPositions = [[],[],[]];
+  const textRef1 = useRef(null);
+  const textRef2 = useRef(null);
+  const textRef3 = useRef(null);
 
   const handleSignature = async signature => {
+
     props.handlepopup(false);
     addRoomDrawing(signature)
+    var filteredList = []
+    for(var i=0; i<3; i++){
+      if(SensorsPositions[i].length==2){
+        filteredList.push(SensorsPositions[i])
+      }
+    }
+    handleSensors(RoomSensors=>[...RoomSensors, filteredList])
   };
 
+  function handleRelease(x, y, i){
+    const Xperc = x/screenWidth
+    const Yperc=(y-((screenHeight-355)/2))/300
+    SensorsPositions[i] = [Xperc, Yperc];
+    
+  }
   return (
     <View style={styles.drawroompopup}>
+      <Draggable  
+        onDragRelease={textRef1!=null ? ()=>textRef1.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 0) }):()=>console.log("")} 
+        x={InitialSensorsPosition[0]} 
+        y={InitialSensorsPosition[1]} 
+        renderText='' 
+        isCircle 
+        renderSize={30} 
+        renderColor='green'>
+      <View ref={textRef1}style={{borderWidth:0.01, height:30, width:30}}></View>
+      </Draggable>
+
+      <Draggable  
+        onDragRelease={textRef2!=null ? ()=>textRef2.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 1) }):()=>console.log("")}
+        x={InitialSensorsPosition[0]} 
+        y={InitialSensorsPosition[1]} 
+        renderText='' 
+        isCircle 
+        renderSize={30} 
+        renderColor='green'>
+      <View ref={textRef2}style={{borderWidth:0.01, height:30, width:30}}></View>
+      </Draggable>
+
+      <Draggable  
+        onDragRelease={textRef3!=null ? ()=>textRef3.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 2) }):()=>console.log("")}
+        x={InitialSensorsPosition[0]} 
+        y={InitialSensorsPosition[1]} 
+        renderText='' 
+        isCircle 
+        renderSize={30} 
+        renderColor='green'>
+      <View ref={textRef3}style={{borderWidth:0.01, height:30, width:30}}></View>
+      </Draggable>
+
+      <View style={{width:'100%', height:'100%'}} >
       <SignatureScreen
           onOK ={handleSignature}
           autoClear={true} 
@@ -269,6 +371,7 @@ function Sign(props){
           maxWidth = {1.5}
           trimWhitespace={false}
       />
+    </View>
     </View>
   );
 }
@@ -346,10 +449,14 @@ function EditRoomline(){
 
 function AddRoomScreen(){
   const [BackPressed,setBackPressed]=useState(false)
-  const [RoomDrawings,setRoomDrawings]=useState([]) //all drawing of rooms
-  const [Rooms,setRooms]=useState([]) //all name of rooms
+  const [RoomDrawings,setRoomDrawings]=useState([]) //Drawings of newly created rooms
+  const [Rooms,setRooms]=useState([]) //Names of newly created rooms
+  const [RoomSensors,setRoomSensors]=useState([]) // Sensors of newly created rooms
+
   const [RN, handleRN] = useContext(RoomNameContext)
   const [RD, handleRD] = useContext(RoomDrawingContext)
+  const [RS, handleRS] = useContext(RoomSensorsContext)
+  
 
   function addRoomDrawing(Drawing){
     handleRD(RoomDrawings=> [...RoomDrawings, Drawing])
@@ -369,17 +476,21 @@ function AddRoomScreen(){
     setRooms(Rooms=> [...Rooms, newRoom])
     
   }
+  function handleSensors(value){
+    setRoomSensors(value)
+  }
   async function handleBackPress(){
-    console.log(Rooms.length +" Rooms added")
+    handleRS(RS=>[...RS, RoomSensors])
     for(var i=0; i<Rooms.length; i++){
       try{
-        await AsyncStorage.setItem(Rooms[i], RoomDrawings[i])
+        await AsyncStorage.setItem(Rooms[i], JSON.stringify([RoomDrawings[i],RoomSensors[i]]))
       }catch(e){
         console.log("Error storing: "+e);
       }
     }
     setBackPressed(true)
   }
+
   return(
     <View style={{flex:1}}>
       {!BackPressed? <View style={{flex:1}}>
@@ -394,9 +505,11 @@ function AddRoomScreen(){
       </View>
       <View style={styles.drawRoomContainer}>
         <View  style={styles.RoomListContainer}>
-          <DrawingContext.Provider value={[RoomDrawings,addRoomDrawing]}>
+        <DrawingContext.Provider value={[RoomDrawings,addRoomDrawing]}>
+        <SensorsContext.Provider value={[RoomSensors,handleSensors]}>
           <LoadRooms/>
-        </DrawingContext.Provider>
+          </SensorsContext.Provider>
+          </DrawingContext.Provider>
           <ClickedContext.Provider value={[Rooms, addRoom]}>
              <EditRoomline/>
           </ClickedContext.Provider>
@@ -417,15 +530,15 @@ function DeleteRoomsScreen(){
   const [Backpressed, setBackpressed] = useState(false)
   const [RN, handleRN] = useContext(RoomNameContext)
   const [RD, handleRD] = useContext(RoomDrawingContext)
+  const [RS, handleRS] = useContext(RoomSensorsContext)
 
   async function getRooms(){
-    console.log("Get Rooms");
     var Roomnames = [];
     try{
-      Roomnames = await AsyncStorage.getAllKeys();
+      var filterNames = await AsyncStorage.getAllKeys();
+      Roomnames = filterNames.filter(element=>element!="Mode");
       if(Roomnames!=null){
         setRooms(Roomnames);
-        console.log(Roomnames.toString())
       }
       else
         console.log("No Rooms to show")
@@ -450,15 +563,12 @@ function DeleteRoomsScreen(){
 
   
   const HandlePress = (name)=>{
-    console.log(name)
     var index = pressed.indexOf(name);
-    //console.log(index)
     if(index==-1){ // add to array
       setPressed(pressed =>[...pressed, name])
     }else{ //remove from array
      setPressed(pressed.filter(element=>element!==name))
     }
-    //console.log("Pressed: "+pressed.toString());
   }
   function RoomsButtons(){
     var content = [];
@@ -494,25 +604,24 @@ function DeleteRoomsScreen(){
     }
   }
   const handleBack = ()=>{
-    console.log("Removing "+pressed.toString());
     setBackpressed(true)
-    console.log(pressed.length)
     for(var i=0; i<pressed.length; i++){
       removeRoom(pressed[i])
       var index = RN.indexOf(pressed[i])
       handleRN(RN.filter(element=>element!=pressed[i]));
       handleRD(RD.filter(element=>element!=RD[index]))
+      handleRS(RS.filter(element=>element!=RS[index]))
+      
     }
 
   }
   return(
     <View style={{flex:1}}>
-
        {!Backpressed?<View style={{flex:1}}>
-      <View style={{flex:0.15, justifyContent:'center', borderWidth:3}}>
+      <View style={{flex:0.15, justifyContent:'center',}}>
       <Text style={{ fontSize: 30, fontFamily: 'Montserrat_300Light', color: '#6D9AB0', alignSelf:'center',}}>Delete Rooms</Text>
       </View>
-      <View style={{flex:0.7,alignItems:'center', borderWidth:3, justifyContent:'center'}}>
+      <View style={{flex:0.15, justifyContent:'center',}}>
       <RoomsButtons/>
       </View>
       <View style = {styles.DeleteScreenBack} >
@@ -522,6 +631,7 @@ function DeleteRoomsScreen(){
     </View>
   )
 }
+
 function SettingsScreen(){
   const [settingsPressed, setsettingsPressed]=useContext(settingsButtonContext);
   const [BackPressed, setBackPressed]=useState(false);
@@ -540,7 +650,7 @@ function SettingsScreen(){
       {!BackPressed && !AlertButton && !AddRoomButton && !DeleteRoomButton ?
       <View style={{flex:1}}>
       <View style={{flex:0.2}}></View>
-      <View style={{flex:0.4, alignItems:'center', borderWidth:3}}>
+      <View style={{flex:0.15, justifyContent:'center',}}>
       <TouchableOpacity onPress = {()=>setAlertButton(true)}style={styles.SettingBox}>
         <View style={{marginLeft:5, flex:3, alignItems:'center'}}>
         <AutoSizeText style={styles.SettingsText} fontSize={25} numberOfLines={1} mode={ResizeTextMode.max_lines}>Alerts</AutoSizeText>

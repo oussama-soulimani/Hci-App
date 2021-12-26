@@ -1,6 +1,6 @@
-import React, { useState,useContext } from 'react';
+import React, { useState,useContext, useRef, useEffect } from 'react';
 import {Modal, Image,View, Text,TextInput,ActivityIndicator, Button,TouchableOpacity,ScrollView, Pressable} from 'react-native';
-import { styles } from "../Styles/StyleHeader";
+import { styles, screenWidth, screenHeight } from "../Styles/StyleHeader";
 import {Montserrat_400Regular, Montserrat_500Medium} from '@expo-google-fonts/montserrat'
 import AppLoading from 'expo-app-loading';
 import { useFonts } from 'expo-font';
@@ -16,9 +16,10 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Clock from '../images/clock.svg'
 import { headerTextContext } from './App';
 import { RoomsScreen } from './UseBody';
-
+import Draggable from 'react-native-draggable';
 const ClickedContext = React.createContext();
 const DrawingContext = React.createContext();
+const SensorsContext = React.createContext();
 
 const animate = () => {
   const [translation, setTranslation] = useState(0);
@@ -47,7 +48,7 @@ export class ListDetectedSensors extends React.Component{
   constructor(props){
     super(props)
     this.state = {
-      NextPressed: false,/*Moet later op true */
+      NextPressed: true,/*Moet later op true */
     }
   }
   
@@ -71,7 +72,7 @@ export class ListDetectedSensors extends React.Component{
             </View>
           </View>
         </View>
-        <View style = {{width:'100%',borderWidth: 3,alignItems:'flex-end', paddingRight: 10,}} >
+        <View style = {{width:'100%',alignItems:'flex-end', paddingRight: 10,}} >
         <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
         </View>
       </View>:<RenameSensorScreen/>}
@@ -84,7 +85,7 @@ class RenameSensorScreen extends React.Component{
   constructor(props){
     super(props)
     this.state = {
-      NextPressed: false,/*Moet later op true */
+      NextPressed: true,/*Moet later op true */
     }
   }
     render(){
@@ -129,7 +130,7 @@ class PlaceSensorsScreen extends React.Component{
   constructor(props){
     super(props)
     this.state = {
-      NextPressed: false,/*Moet later op true */
+      NextPressed: true,/*Moet later op true */
     }
   }
 
@@ -152,10 +153,12 @@ class PlaceSensorsScreen extends React.Component{
 
 
 function DrawScreen(){
-  const [NextPressed,setNextPressed]=useState(true) // moet later op false
+  const [NextPressed,setNextPressed]=useState(false) // moet later op false
   const [Rooms,setRooms]=useState([]) //all name of rooms
   const [RoomDrawings,setRoomDrawings]=useState([]) //allke drawing of rooms
   const [Drawing, setDrawing] = useState();
+  const [RoomSensors,setRoomSensors]=useState([]) //allke drawing of rooms
+
 
 
   
@@ -169,7 +172,7 @@ function DrawScreen(){
 
   function handleNextPress(){
     for(var i=0; i<Rooms.length; i++){
-      storeRoomName(Rooms[i], RoomDrawings[i]);
+      storeRoomName(Rooms[i], JSON.stringify([RoomDrawings[i], RoomSensors[i]]));
     }
     setNextPressed(!NextPressed)
   }
@@ -188,10 +191,14 @@ function DrawScreen(){
       Rooms=> [...Rooms, newRoom]
     )
   }
-
   function addRoomDrawing(Drawing){
     setRoomDrawings(
       RoomDrawings=> [...RoomDrawings, Drawing]
+      )
+  }
+  function addRoomSensor(Sensor){
+    setRoomSensors(
+      RoomSensors=> [...RoomSensors, Sensor]
       )
   }
   
@@ -209,9 +216,11 @@ function DrawScreen(){
       </View>
       <View style={styles.drawRoomContainer}>
         <View  style={styles.RoomListContainer}>
+          <SensorsContext.Provider value = {[RoomSensors, addRoomSensor]}>
           <DrawingContext.Provider value={[RoomDrawings,addRoomDrawing]}>
           <LoadRooms/>
           </DrawingContext.Provider>
+          </SensorsContext.Provider>
           <ClickedContext.Provider value={[Rooms, addRoom]}>
              <EditRoomline/>
           </ClickedContext.Provider>
@@ -224,17 +233,93 @@ function DrawScreen(){
     </View>
   );
 }
+class Sensor extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      Measurements:{}
+    }
+  }
+
+  LayoutInfo(event) {
+    const layout = event.nativeEvent.layout;
+  }
+  render(){
+    return(
+      <Draggable x={0} y={0}  isCircle renderColor='green'>
+      <TouchableOpacity onLayout={(e)=>this.LayoutInfo(e) } style={{width:100, height:100, borderWidth:3}}>
+        <Text>X: {this.state.Measurements.x}</Text>
+        <Text>Y: {this.state.Measurements.y}</Text>
+      </TouchableOpacity>
+      </Draggable>
+    )
+  }
+}
 
 function Sign(props){
   const[RoomDrawings,addRoomDrawing]=useContext(DrawingContext)
+  const [RoomSensors, addRoomSensor] = useContext(SensorsContext)
+  var InitialSensorsPosition = [(screenWidth/2)-30,(screenHeight-355)/2]
+  var SensorsPositions = [[],[],[]];
+  const textRef1 = useRef(null);
+  const textRef2 = useRef(null);
+  const textRef3 = useRef(null);
+
 
   const handleSignature = async signature => {
     props.handlepopup(false);
     addRoomDrawing(signature)
+    var filteredList = []
+    for(var i=0; i<3; i++){
+      if(SensorsPositions[i].length==2){
+        filteredList.push(SensorsPositions[i])
+      }
+    }
+    addRoomSensor(filteredList);
   };
 
+  function handleRelease(x, y, i){
+    const Xperc = x/screenWidth
+    const Yperc=(y-((screenHeight-355)/2))/300
+    SensorsPositions[i] = [Xperc, Yperc];
+    
+  }
   return (
     <View style={styles.drawroompopup}>
+      <Draggable  
+        onDragRelease={textRef1!=null ? ()=>textRef1.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 0) }):()=>console.log("")} 
+        x={InitialSensorsPosition[0]} 
+        y={InitialSensorsPosition[1]} 
+        renderText='' 
+        isCircle 
+        renderSize={30} 
+        renderColor='green'>
+      <View ref={textRef1}style={{borderWidth:0.01, height:30, width:30}}></View>
+      </Draggable>
+
+      <Draggable  
+        onDragRelease={textRef2!=null ? ()=>textRef2.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 1) }):()=>console.log("")}
+        x={InitialSensorsPosition[0]} 
+        y={InitialSensorsPosition[1]} 
+        renderText='' 
+        isCircle 
+        renderSize={30} 
+        renderColor='green'>
+      <View ref={textRef2}style={{borderWidth:0.01, height:30, width:30}}></View>
+      </Draggable>
+
+      <Draggable  
+        onDragRelease={textRef3!=null ? ()=>textRef3.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 2) }):()=>console.log("")}
+        x={InitialSensorsPosition[0]} 
+        y={InitialSensorsPosition[1]} 
+        renderText='' 
+        isCircle 
+        renderSize={30} 
+        renderColor='green'>
+      <View ref={textRef3}style={{borderWidth:0.01, height:30, width:30}}></View>
+      </Draggable>
+
+      <View style={{width:'100%', height:'100%'}} >
       <SignatureScreen
           onOK ={handleSignature}
           autoClear={true} 
@@ -242,7 +327,8 @@ function Sign(props){
           minWidth = {1.5}
           maxWidth = {1.5}
           trimWhitespace={false}
-      />
+          />
+      </View>
     </View>
   );
 }
@@ -260,7 +346,6 @@ function Roomline(props){
     }
     setRoomClicked(!RoomClicked)
   }
-
   return(
     <View>
     <TouchableOpacity onPress={()=>handleRoomClick()}>
@@ -277,7 +362,7 @@ function Roomline(props){
           </Modal>
           </View>
           :
-        props.Drawing!=null? 
+        props.Drawing!==null? 
         <Image style={{width: "80%", height:255, alignSelf:'center'}}
         source={{uri: props.Drawing}}></Image>:null)
       :null
@@ -319,18 +404,23 @@ export function EditRoomline(){
 }
 
 function AlertQuestion(){
-  const [AcceptQuestion, setAccept] = useState(true);//moet later weer false
+  const [AcceptQuestion, setAccept] = useState(false);//moet later weer false
   const [RejectQuestion, setRejectQuestion] = useState(false);//moet later weer false  
   const [headerText, setText] = useContext(headerTextContext);
 
   let [fontsloaded] = useFonts({ Montserrat_400Regular})
-  
-  function handleRejectPress(){
+
+  //remove mode buffer ==> mode==null =>ConfigMode else Usage
+  async function handleRejectPress(){
     setText("Usage")
     setRejectQuestion(true)
+    try{
+      await AsyncStorage.setItem("Mode", "Usage")
+    }catch(e){
+      console.log("ERROR: "+e)
+    }
 
   }
-    
 
   if(!fontsloaded){
     return (<AppLoading/>)
@@ -374,7 +464,7 @@ return (
 export function AlertsScreen(){
   const [weatherClicked, setWeatherClicked] = useState(true);
   const [timeClicked, settimeClicked] = useState(true);
-  const [NextPressed,setNextPressed]=useState(true) // Moet later weer op false
+  const [NextPressed,setNextPressed]=useState(false) // Moet later weer op false
 
   
   const [FirstTempChecked, setFirstTempChecked] = useState(false);
@@ -405,9 +495,15 @@ export function AlertsScreen(){
     return (<AppLoading/>)
   }
 
-  function handleNextPress(){
+  async function handleNextPress(){
     setText("Usage")
     setNextPressed(!NextPressed)
+    //finished configuration 
+    try{
+      await AsyncStorage.setItem("Mode", "Usage")
+    }catch(e){
+      console.log("ERROR: "+e)
+    }
   }
 
   const handleWeather = ()=>{
@@ -417,7 +513,6 @@ export function AlertsScreen(){
   }
 
   const handleTime = ()=>{
-    console.log("Clicked")
     settimeClicked(!timeClicked)
     if(weatherClicked)
       setWeatherClicked(!weatherClicked)
@@ -441,12 +536,10 @@ export function AlertsScreen(){
   }
   const handlestartTime = (value)=>{
     setstartTime(false);
-    console.log("starttime: "+ value);
     setstartTimeValue(value);
   }
   const handleEndtTime = (value)=>{
     setendendTime(false);
-    console.log("endtime: "+ value);
     setendTimeValue(value);
   }
 
