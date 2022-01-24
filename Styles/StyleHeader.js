@@ -74,12 +74,14 @@ export const styles = StyleSheet.create({
     justifyContent:'center',
     width:'70%',
     height:50,
-    backgroundColor: '#6D9AB0',
+    borderWidth:2,
+    borderColor:"#6D9AB0",
+    borderRadius:5
   },
   sensorText:{
     fontFamily: 'Montserrat_300Light', 
     fontSize:25,
-    color:"#F2F6F8"
+    color:"#6D9AB0"
   },
   sensorRename:{
     marginBottom: 10,
@@ -177,8 +179,6 @@ export const styles = StyleSheet.create({
   Alert:{ 
     flex: 0.8, 
     flexDirection: 'column',
-    borderWidth:3, 
-    borderColor: 'red', 
     width: screenWidth,
     alignItems: 'flex-start'
   },

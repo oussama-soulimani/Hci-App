@@ -621,12 +621,14 @@ function DeleteRoomsScreen(){
       <View style={{flex:0.15, justifyContent:'center',}}>
       <Text style={{ fontSize: 30, fontFamily: 'Montserrat_300Light', color: '#6D9AB0', alignSelf:'center',}}>Delete Rooms</Text>
       </View>
-      <View style={{flex:0.15, justifyContent:'center',}}>
+      <View style={{flex:0.75, justifyContent:'center',}}>
       <RoomsButtons/>
       </View>
-      <View style = {styles.DeleteScreenBack} >
-        <Back width={60} height={60} onPress={()=>handleBack()}/>
-    </View>
+      <View style = {{flex:0.1, width:screenWidth,alignItems:'flex-end', paddingRight: 10, padding: 10, flex:0.2, justifyContent:'flex-end'}} >
+        <TouchableOpacity onPress={()=>handleBack()} style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}}>
+          <Text style={{fontSize:20, color:'#6D9AB0' }}>Confirm</Text>
+        </TouchableOpacity>
+      </View>
     </View>:<SettingsScreen/>}
     </View>
   )
@@ -650,7 +652,7 @@ function SettingsScreen(){
       {!BackPressed && !AlertButton && !AddRoomButton && !DeleteRoomButton ?
       <View style={{flex:1}}>
       <View style={{flex:0.2}}></View>
-      <View style={{flex:0.15, justifyContent:'center',}}>
+      <View style={{flex:0.75, justifyContent:'center', alignItems:'center'}}>
       <TouchableOpacity onPress = {()=>setAlertButton(true)}style={styles.SettingBox}>
         <View style={{marginLeft:5, flex:3, alignItems:'center'}}>
         <AutoSizeText style={styles.SettingsText} fontSize={25} numberOfLines={1} mode={ResizeTextMode.max_lines}>Alerts</AutoSizeText>

@@ -17,6 +17,8 @@ import Clock from '../images/clock.svg'
 import { headerTextContext } from './App';
 import { RoomsScreen } from './UseBody';
 import Draggable from 'react-native-draggable';
+import { useTheme } from 'react-native-elements';
+import {Load} from './Body';
 const ClickedContext = React.createContext();
 const DrawingContext = React.createContext();
 const SensorsContext = React.createContext();
@@ -49,33 +51,30 @@ export class ListDetectedSensors extends React.Component{
     super(props)
     this.state = {
       NextPressed: true,/*Moet later op true */
+      RescanPressed:false,
     }
   }
   
   render(){
     return(
       <View>
-      {this.state.NextPressed ? <View style = {styles.DetectBox}>
-        <View style={styles.SensorListHeader}>
+      {this.state.NextPressed && !this.state.RescanPressed ? <View style = {styles.DetectBox}>
+        <View style={{top:0, flex:.9, width:'100%', justifyContent:'center', alignItems:'center',}}>
           <Text style={styles.Bigtext}>3 Sensors Detected</Text>
         </View>
-        <View style={styles.sensorListContainer}>
-          <View style={styles.SensorList}>
-            <View style={styles.sensor}>
-              <Text style={styles.sensorText}>Sensor 1</Text>
-            </View>
-            <View  style={styles.sensor}>
-              <Text style={styles.sensorText}>Sensor 2</Text>
-            </View>
-            <View style={styles.sensor}>
-              <Text style={styles.sensorText}>Sensor 3</Text>
-            </View>
+        <View style = {{width:'100%', flexDirection:'row', paddingRight: 10, padding: 10, flex:0.1, borderWidth:3,}} >
+        <View style={{width:'50%'}}>
+          <TouchableOpacity style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}} onPress={()=>this.setState({RescanPressed: !this.state.RescanPressed})}>
+            <Text style={{fontSize:20, color:'#6D9AB0' }}>Rescan</Text>
+          </TouchableOpacity>
+          </View>
+          <View style={{width:'50%', alignItems:"flex-end"}}>
+          <TouchableOpacity style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}>
+            <Text style={{fontSize:20, color:'#6D9AB0' }}>Confirm</Text>
+          </TouchableOpacity>
           </View>
         </View>
-        <View style = {{width:'100%',alignItems:'flex-end', paddingRight: 10,}} >
-        <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
-        </View>
-      </View>:<RenameSensorScreen/>}
+      </View>: this.state.RescanPressed ? <Load/>:<RenameSensorScreen/>}
       </View>
     );
   }
@@ -93,7 +92,7 @@ class RenameSensorScreen extends React.Component{
       <View style={{flex:1}}>
       {this.state.NextPressed ?<View style = {styles.DetectBox}>
         <View style={styles.SensorListHeader}>
-          <Text style={styles.Bigtext}>3 Sensors Detected</Text>
+          <Text style={styles.Bigtext}>Rename the sensors</Text>
         </View>
         <View style={styles.sensorListContainer}>
           <View style={styles.SensorList}>
@@ -101,24 +100,26 @@ class RenameSensorScreen extends React.Component{
               <Text style={styles.sensorText}>Sensor 1</Text>
             </View>
             <View style={styles.sensorRename}>
-              <TextInput placeholder="New Name" style={styles.sensorRenameText}></TextInput>
+              <TextInput placeholder="Enter New Name" style={styles.sensorRenameText}></TextInput>
             </View>
             <View  style={styles.sensor}>
               <Text style={styles.sensorText}>Sensor 2</Text>
             </View>
             <View style={styles.sensorRename}>
-              <TextInput placeholder="New Name" style={styles.sensorRenameText}></TextInput>
+              <TextInput placeholder="Enter New Name" style={styles.sensorRenameText}></TextInput>
             </View>
             <View style={styles.sensor}>
               <Text style={styles.sensorText}>Sensor 3</Text>
             </View>
             <View style={styles.sensorRename}>
-              <TextInput placeholder="New Name" style={styles.sensorRenameText}></TextInput>
+              <TextInput placeholder="Enter New Name" style={styles.sensorRenameText}></TextInput>
             </View>
           </View>
         </View>
-        <View style = {styles.NextButton} >
-        <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
+        <View style = {{width:'100%',alignItems:'flex-end', paddingRight: 10, padding: 10}} >
+          <TouchableOpacity onPress={()=>this.setState({NextPressed: !this.state.NextPressed})} style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}}>
+            <Text style={{fontSize:20, color:'#6D9AB0' }}>Confirm</Text>
+          </TouchableOpacity>
         </View>
       </View>:<PlaceSensorsScreen/>}
       </View>);
@@ -142,9 +143,11 @@ class PlaceSensorsScreen extends React.Component{
           <View style={{flex:1, justifyContent:'center',}}>
             <Text style={{fontSize: 30,fontFamily: 'Montserrat_300Light',color: '#6D9AB0',alignSelf:'center',}}>Place Sensors</Text>
           </View>
-          <View style = {styles.NextButton} >
-            <Next width={60} height={60} onPress={()=>this.setState({NextPressed: !this.state.NextPressed})}/>
-          </View>
+          <View style = {{width:screenWidth,alignItems:'flex-end', paddingRight: 10, padding: 10}} >
+          <TouchableOpacity onPress={()=>this.setState({NextPressed: !this.state.NextPressed})} style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}}>
+            <Text style={{fontSize:20, color:'#6D9AB0' }}>Confirm</Text>
+          </TouchableOpacity>
+        </View>
         </View>:<DrawScreen/>}
       </View>
     );
@@ -158,7 +161,7 @@ function DrawScreen(){
   const [RoomDrawings,setRoomDrawings]=useState([]) //allke drawing of rooms
   const [Drawing, setDrawing] = useState();
   const [RoomSensors,setRoomSensors]=useState([]) //allke drawing of rooms
-
+  const [ApplyClicked, setApplyClicked] = useState(false)
 
 
   
@@ -171,16 +174,23 @@ function DrawScreen(){
   }
 
   function handleNextPress(){
-    for(var i=0; i<Rooms.length; i++){
-      storeRoomName(Rooms[i], JSON.stringify([RoomDrawings[i], RoomSensors[i]]));
+    if(RoomDrawings.length==Rooms.length){
+      for(var i=0; i<Rooms.length; i++){
+        storeRoomName(Rooms[i], JSON.stringify([RoomDrawings[i], RoomSensors[i]]));
+      }
+      setNextPressed(!NextPressed)
+    }else{
+      alert("Click on a room to draw")
     }
-    setNextPressed(!NextPressed)
   }
 
   function LoadRooms(){
     var content = []
-    for(var i=0; i<Rooms.length; i++){
-      content.push(<Roomline key = {i} roomName={Rooms[i]} Drawing = {RoomDrawings[i]}/>)
+    for(var i=0; i<Rooms.length-1; i++){
+      content.push(<Roomline key = {i} roomName={Rooms[i]} Drawing = {RoomDrawings[i]} last = {false}/>)
+    }
+    if(Rooms.length!=0){
+      content.push(<Roomline key = {Rooms.length-1} roomName={Rooms[Rooms.length-1]} Drawing = {RoomDrawings[Rooms.length-1]} last = {true} ApplyClicked = {ApplyClicked} />)
     }
     return <View>{content}</View>;
   }
@@ -222,13 +232,15 @@ function DrawScreen(){
           </DrawingContext.Provider>
           </SensorsContext.Provider>
           <ClickedContext.Provider value={[Rooms, addRoom]}>
-             <EditRoomline/>
+             <EditRoomline setApplyClicked = {setApplyClicked}/>
           </ClickedContext.Provider>
         </View >
       </View>
-      <View style = {styles.NextButton} >
-        <Next width={60} height={60} onPress={()=>handleNextPress()}/>
-      </View>
+      <View style = {{width:'100%',alignItems:'flex-end', paddingRight: 10, padding: 10}} >
+          <TouchableOpacity onPress={()=>handleNextPress()} style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}}>
+            <Text style={{fontSize:20, color:'#6D9AB0' }}>Confirm</Text>
+          </TouchableOpacity>
+        </View>
       </View>:<AlertQuestion/>}
     </View>
   );
@@ -286,6 +298,16 @@ function Sign(props){
   }
   return (
     <View style={styles.drawroompopup}>
+      <Draggable  
+        onDragRelease={textRef1!=null ? ()=>textRef1.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 0) }):()=>console.log("")} 
+        x={InitialSensorsPosition[0]+35} 
+        y={InitialSensorsPosition[1]}
+        disabled
+        renderSize={70}>
+      <View style={{height:70, width:70}}>
+      <Text style={{fontSize:20, fontFamily: 'Montserrat_300Light', color: '#6D9AB0',}}>Sensor</Text></View>
+      </Draggable>
+
       <Draggable  
         onDragRelease={textRef1!=null ? ()=>textRef1.current.measure((x,y,w,h, px, py)=>{handleRelease(px, py, 0) }):()=>console.log("")} 
         x={InitialSensorsPosition[0]} 
@@ -346,6 +368,14 @@ function Roomline(props){
     }
     setRoomClicked(!RoomClicked)
   }
+  useEffect(()=>{
+    if(props.last && props.ApplyClicked && props.Drawing==null){
+      console.log("test")
+      if(props.Drawing==null){
+        setshowPopup(true);
+      }
+    }
+  },[])
   return(
     <View>
     <TouchableOpacity onPress={()=>handleRoomClick()}>
@@ -354,7 +384,7 @@ function Roomline(props){
         <Text style={{flex:3,fontFamily: 'Montserrat_300Light',fontSize:20,color:'#6D9AB0'}}>{props.roomName}</Text>
       </View>
     </TouchableOpacity>
-      {RoomClicked ?
+      {RoomClicked ||(props.last && props.ApplyClicked) ?
         (props.Drawing==null ? 
           <View style={{flex:1, justifyContent:'center', alignItems:'center', marginTop:30}}>
           <Modal animationType='fade' transparent={true} visible={showPopup}>
@@ -362,7 +392,7 @@ function Roomline(props){
           </Modal>
           </View>
           :
-        props.Drawing!==null? 
+        props.Drawing!==null && console.log("Show")? 
         <Image style={{width: "80%", height:255, alignSelf:'center'}}
         source={{uri: props.Drawing}}></Image>:null)
       :null
@@ -371,13 +401,17 @@ function Roomline(props){
   );
 }
 
-export function EditRoomline(){
+export function EditRoomline(props){
   const [currentRoom, setcurrentRoom] = useState('')
 
   const modRoom = (room) =>{
     setcurrentRoom(room)
   }
   const[room, addRoom] = useContext(ClickedContext);
+  const ApplyHandle = (value) =>{
+    props.setApplyClicked(true)
+    addRoom(value)
+  }
 
   return(
     <View style={{flexDirection:'row', marginBottom:7, marginLeft:5, }}>
@@ -391,7 +425,7 @@ export function EditRoomline(){
       ></TextInput>
       </View>
       <View style={styles.applyButton}>
-        <TouchableOpacity onPress={()=>addRoom(currentRoom)}> 
+        <TouchableOpacity onPress={()=>ApplyHandle(currentRoom)}> 
           <Text  style={{
             fontFamily: 'Montserrat_300Light', 
             fontSize:20, 
@@ -561,62 +595,46 @@ return (
         {weatherClicked ?
         <View style={styles.weatherContainer}>
           <View style={{flexDirection: 'row', alignItems:'center',}}>
-            <MyCheckbox checked={FirstTempChecked} onChange={setFirstTempChecked} />
-            <Text style={styles.selectionText}>Temperature</Text>
-            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
-            <Picker
-              selectedValue={FirstTemp}
-              style={{width: 110, }}
-              onValueChange={(value) =>setFirstTemp(value)}>
-              <Picker.Item color = '#3E3E3E' label="Above" value="Above" />
-              <Picker.Item label="Below" value="Below" />
-            </Picker>
-          </View>
-          <View style={{backgroundColor:'white',marginTop: 5,width: 100, borderWidth:0.3, borderRadius:4, height: 40,alignItems:'center', justifyContent:'center' }}>
-            <TextInput value = {FirstTempValue} onChange = {(value)=>setFirstTempValue(value)}placeholder="Temperature" keyboardType="numeric" ></TextInput>
-          </View>
-        </View>
-        <View style={{flexDirection: 'row', alignItems:'center'}}>
-          <Text style={styles.selectionText,  {marginLeft:36}}>Notify me if
-          </Text>
-          <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
-            <Picker
-              selectedValue={FirstOpened}
-              style={{width: 110, }}
-              onValueChange={(value) =>setFirstOpened(value)}>
-              <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
-              <Picker.Item label="Closed" value="Closed" />
-            </Picker>
+          <MyCheckbox checked={FirstTempChecked} onChange={setFirstTempChecked} />
+          <Text style={styles.selectionText}>Notify me if Window/Door</Text>
+          <View style={{flexDirection: 'row', alignItems:'center'}}>
+            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+              <Picker
+                selectedValue={FirstOpened}
+                style={{width: 110, }}
+                onValueChange={(value) =>setFirstOpened(value)}>
+                <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
+                <Picker.Item label="Closed" value="Closed" />
+              </Picker>
+            </View>
           </View>
         </View>
-        <View style={{flexDirection: 'row', alignItems:'center',marginTop:15}}>
-            <MyCheckbox checked={SecondTempChecked} onChange={(value) =>setSecondTempChecked(value)} />
-            <Text style={styles.selectionText}>Temperature</Text>
-            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
-            <Picker
-              selectedValue={SecondTemp}
-              style={{width: 110, }}
-              onValueChange={(value) =>setSecondTemp(value)}>
-              <Picker.Item color = '#3E3E3E' label="Above" value="Above" />
-              <Picker.Item label="Below" value="Below" />
-            </Picker>
-          </View>
-          <View style={{backgroundColor:'white',marginTop: 5,width: 100, borderWidth:0.3, borderRadius:4, height: 40,alignItems:'center', justifyContent:'center' }}>
-            <TextInput value = {SecondTempValue} onChange={(value)=>setSecondTempValue(value)}placeholder="Temperature" keyboardType="numeric" ></TextInput>
+        <View style={{flexDirection:"row", alignItems:'center',marginLeft:30}}>
+        <Text style={styles.selectionText }>And Temperature above</Text>
+        <View style={{flexDirection: 'row', backgroundColor:'white',marginTop: 5,width: 100, borderWidth:0.3, borderRadius:4, height: 40,alignItems:'center', justifyContent:'center' }}>
+        <TextInput value = {FirstTempValue} onChange = {(value)=>setFirstTempValue(value)}placeholder="Temperature" keyboardType="numeric" ></TextInput>
+        </View>
+        </View>
+        <View style={{flexDirection: 'row', alignItems:'center', marginTop:15}}>
+          <MyCheckbox checked={FirstTempChecked} onChange={setFirstTempChecked} />
+          <Text style={styles.selectionText}>Notify me if Window/Door</Text>
+          <View style={{flexDirection: 'row', alignItems:'center'}}>
+            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+              <Picker
+                selectedValue={FirstOpened}
+                style={{width: 110, }}
+                onValueChange={(value) =>setFirstOpened(value)}>
+                <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
+                <Picker.Item label="Closed" value="Closed" />
+              </Picker>
+            </View>
           </View>
         </View>
-        <View style={{flexDirection: 'row', alignItems:'center',}}>
-          <Text style={styles.selectionText, {marginLeft:36}}>Notify me if
-          </Text>
-          <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
-            <Picker
-              selectedValue={SecondOpened}
-              style={{width: 110, }}
-              onValueChange={(value) =>setSecondOpened(value)}>
-              <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
-              <Picker.Item label="Closed" value="Closed" />
-            </Picker>
-          </View>
+        <View style={{flexDirection:"row", alignItems:'center',marginLeft:30}}>
+        <Text style={styles.selectionText }>And Temperature Below</Text>
+        <View style={{flexDirection: 'row', backgroundColor:'white',marginTop: 5,width: 100, borderWidth:0.3, borderRadius:4, height: 40,alignItems:'center', justifyContent:'center' }}>
+        <TextInput value = {FirstTempValue} onChange = {(value)=>setFirstTempValue(value)}placeholder="Temperature" keyboardType="numeric" ></TextInput>
+        </View>
         </View>
         <View style={{flexDirection: 'row', alignItems:'center',marginTop:15}}>
             <MyCheckbox checked={RainChecked} onChange={(value)=>setRainChecked(value)} />
@@ -633,11 +651,28 @@ return (
             color: '#3E3E3E',
           }}>Time </Text>
         </TouchableOpacity>
-      { timeClicked ?<View>
+      { timeClicked ?
+      <View>
         <View style={styles.weatherContainer}>
+        <View style={{flexDirection: 'row', alignItems:'center',}}>
+          <MyCheckbox checked={FirstTempChecked} onChange={setFirstTempChecked} />
+          <Text style={styles.selectionText}>Notify me if Window/Door</Text>
+          <View style={{flexDirection: 'row', alignItems:'center'}}>
+            <View style={{borderRadius:4, borderWidth:0.3,marginRight:3,marginLeft:8 ,backgroundColor:'white',marginTop: 5,width: 100, height: 40,alignItems:'center', justifyContent:'center' }}>
+              <Picker
+                selectedValue={FirstOpened}
+                style={{width: 110, }}
+                onValueChange={(value) =>setFirstOpened(value)}>
+                <Picker.Item color = '#3E3E3E' label="Open" value="Open" />
+                <Picker.Item label="Closed" value="Closed" />
+              </Picker>
+            </View>
+          </View>
+        </View>        
         <View style = {{flexDirection:'row', alignItems:'center', marginVertical:5}}>
-        <MyCheckbox checked={BetweenChecked} onChange={(value)=>setBetweenChecked(value)} />
-        <Text style={styles.selectionText}>Between</Text>
+          <View style={{marginLeft:30}}>
+          <Text style={styles.selectionText}>Between</Text>
+          </View>
           <Clock  width={30} height={30} onPress = {()=>setstartTime(!startTime)}/>
           {startTime && (
             <DateTimePicker
@@ -668,8 +703,10 @@ return (
       </View>: null}
       </View>
     </View>
-    <View style = {{marginRight:3,marginBottom:3, flex:0.1, borderWidth:3, flexDirection:'row', justifyContent:'flex-end', alignItems:'flex-end'}} >
-        <Next width={60} height={60} onPress={()=>handleNextPress()}/>
+    <View style = {{width:'100%',alignItems:'flex-end', paddingRight: 10, padding: 10, flex:0.2, justifyContent:'flex-end'}} >
+      <TouchableOpacity onPress={()=>handleNextPress()} style={{borderWidth:2, backgroundColor:"#E5EDF0", alignItems:"center",justifyContent:"center", width:120, height:50, borderRadius:5, borderColor:"#93B3C8"}}>
+        <Text style={{fontSize:20, color:'#6D9AB0' }}>Confirm</Text>
+      </TouchableOpacity>
     </View>
   </View>:<RoomsScreen/>}</View>
 );
